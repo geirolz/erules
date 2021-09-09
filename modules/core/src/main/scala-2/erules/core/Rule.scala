@@ -104,7 +104,7 @@ sealed trait Rule[-T] extends Serializable {
   /** Eval this rules. The evaluations result is stored into a 'Try', so the `IO` doesn't raise error in case of failed
     * rule evaluation
     */
-  final def eval(data: T): IO[RuleResult.Open[T]] =
+  final def eval(data: T): IO[RuleResult.Free[T]] =
     evalRaw(data).attempt.timed.map { case (duration, res) =>
       RuleResult(
         rule = this,

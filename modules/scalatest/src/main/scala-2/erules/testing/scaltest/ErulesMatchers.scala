@@ -9,8 +9,8 @@ trait ErulesMatchers extends ErulesRuleResultsInterpreterVerdictMatchers with Er
 
 trait ErulesRuleTypedEvaluatedMatchers {
 
-  def executedInMax[T](maxDuration: FiniteDuration): Matcher[RuleResult.Open[T]] =
-    (actual: RuleResult.Open[T]) => {
+  def executedInMax[T](maxDuration: FiniteDuration): Matcher[RuleResult.Free[T]] =
+    (actual: RuleResult.Free[T]) => {
 
       val actualET = actual.executionTime.getOrElse(FiniteDuration(0, MILLISECONDS)).toMillis
       val expectedET = maxDuration.toMillis

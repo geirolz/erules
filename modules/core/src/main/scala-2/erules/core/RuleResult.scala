@@ -20,7 +20,7 @@ case class RuleResult[-T, +V <: RuleVerdict](
 }
 object RuleResult extends RuleResultInstances {
 
-  type Open[-T] = RuleResult[T, RuleVerdict]
+  type Free[-T] = RuleResult[T, RuleVerdict]
 
   def const[V <: RuleVerdict](ruleName: String, v: V): RuleResult[Any, V] =
     RuleResult(Rule(ruleName).const(v), Success(v))

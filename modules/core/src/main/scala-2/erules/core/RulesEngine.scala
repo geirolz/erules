@@ -34,7 +34,7 @@ class RulesEngine[T] private (val rules: NonEmptyList[Rule[T]], interpreter: Rul
 
   private def createResult[F[_]: LiftIO](
     data: T,
-    evalRes: IO[NonEmptyList[RuleResult.Open[T]]]
+    evalRes: IO[NonEmptyList[RuleResult.Free[T]]]
   ): F[EngineResult[T]] =
     evalRes
       .map(evaluatedRules =>
@@ -45,7 +45,7 @@ class RulesEngine[T] private (val rules: NonEmptyList[Rule[T]], interpreter: Rul
       )
       .to[F]
 
-  private def evalZipRuleLogging(data: T, rule: Rule[T]): IO[RuleResult.Open[T]] =
+  private def evalZipRuleLogging(data: T, rule: Rule[T]): IO[RuleResult.Free[T]] =
     rule
       .eval(data)
       .flatTap {

@@ -6,7 +6,7 @@ import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 import scala.util.{Failure, Success}
 
 trait RuleResultsInterpreter {
-  def interpret[T](report: NonEmptyList[RuleResult.Open[T]]): RuleResultsInterpreterVerdict[T]
+  def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T]
 }
 object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
   object Defaults {
@@ -18,7 +18,7 @@ object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
 private[erules] trait EvalResultsInterpreterInstances {
 
   class AllowAllNotDeniedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](report: NonEmptyList[RuleResult.Open[T]]): RuleResultsInterpreterVerdict[T] =
+    override def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T] =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.one(
@@ -29,7 +29,7 @@ private[erules] trait EvalResultsInterpreterInstances {
   }
 
   class DenyAllNotAllowedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](report: NonEmptyList[RuleResult.Open[T]]): RuleResultsInterpreterVerdict[T] =
+    override def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T] =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.one(
@@ -39,7 +39,7 @@ private[erules] trait EvalResultsInterpreterInstances {
       )
   }
 
-  private def partialEval[T](report: NonEmptyList[RuleResult.Open[T]]): Option[RuleResultsInterpreterVerdict[T]] = {
+  private def partialEval[T](report: NonEmptyList[RuleResult.Free[T]]): Option[RuleResultsInterpreterVerdict[T]] = {
     type Res[+V <: RuleVerdict] = RuleResult[T, V]
 
     report.toList

@@ -11,7 +11,7 @@ sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
 
   /** Result reasons
     */
-  val evaluatedRules: NonEmptyList[RuleResult.Open[T]]
+  val evaluatedRules: NonEmptyList[RuleResult.Free[T]]
 
   /** Check if this is an instance of `Allowed` or not
     */
