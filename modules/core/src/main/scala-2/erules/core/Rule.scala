@@ -5,9 +5,8 @@ import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.implicits.*
 import erules.core.RuleVerdict.Ignore
-import erules.core.utils.Summarizable
 
-sealed trait Rule[-T] extends Summarizable {
+sealed trait Rule[-T] extends Serializable {
 
   /** A string to describe in summary this rule.
     */
@@ -71,12 +70,6 @@ sealed trait Rule[-T] extends Summarizable {
     */
   def targetInfo(targetInfo: String): Rule[T]
 
-  /** A summary, human readable, for this instance
-    * @inheritdoc
-    */
-  final override def summary: String =
-    Show[Rule[T]].show(this)
-
   //map
   /** Contravariant version of the map.
     *
@@ -104,6 +97,8 @@ sealed trait Rule[-T] extends Summarizable {
   def contramap[U](cf: U => T): Rule[U]
 
   //eval
+  /** Same as `eval` but has only the `RuleVerdict` value
+    */
   def evalRaw(data: T): IO[RuleVerdict]
 
   /** Eval this rules. The evaluations result is stored into a 'Try', so the `IO` doesn't raise error in case of failed

@@ -1,16 +1,13 @@
 package erules.core
 
 import cats.Show
-import erules.core.utils.Summarizable
 
 /** Value class for a simple reason message.
   *
   * @param message
   *   reason message
   */
-case class EvalReason(message: String) extends Summarizable {
-  override def summary: String = Show[EvalReason].show(this)
-}
+case class EvalReason(message: String) extends AnyVal
 object EvalReason extends EvalReasonInstances {
 
   def stringifyList(reasons: List[EvalReason]): String =

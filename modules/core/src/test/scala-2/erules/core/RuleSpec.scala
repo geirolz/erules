@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
-import erules.core.testings.{ErulesAsyncAssertingSyntax, SummarizableValues}
+import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.TryValues
 import org.scalatest.matchers.should.Matchers
@@ -17,7 +17,7 @@ class RuleSpec
     with Matchers
     with TryValues
     with ErulesAsyncAssertingSyntax
-    with SummarizableValues {
+    with ReportValues {
 
   //------------------------- CONTRAMAP -------------------------
   "Rule.contramap" should {

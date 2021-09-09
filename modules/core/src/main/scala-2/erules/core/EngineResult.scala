@@ -2,7 +2,7 @@ package erules.core
 
 import cats.Show
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.utils.Summarizable
+import erules.core.report.StringReport
 
 /** Describes the engine output.
   *
@@ -16,33 +16,15 @@ import erules.core.utils.Summarizable
 case class EngineResult[T](
   data: T,
   verdict: RuleResultsInterpreterVerdict[T]
-) extends Summarizable {
+) extends Serializable {
 
   def drainExecutionsTime: EngineResult[T] =
     copy(verdict = this.verdict match {
       case a @ Allowed(erules) => a.copy(evaluatedRules = erules.map(_.drainExecutionTime))
       case a @ Denied(erules)  => a.copy(evaluatedRules = erules.map(_.drainExecutionTime))
     })
-
-  override def summary: String = {
-    implicit val showT: Show[T] = cats.Show.fromToString[T]
-    implicitly[Show[EngineResult[T]]].show(this)
-  }
 }
-object EngineResult {
-
-  implicit def catsShowInstanceForEngineResult[T](implicit
-    showT: Show[T],
-    showERIR: Show[RuleResultsInterpreterVerdict[T]]
-  ): Show[EngineResult[T]] =
-    er =>
-      Summarizable.paragraph("ENGINE VERDICT", "#")(
-        s"""
-           |Data: ${showT.show(er.data)}
-           |Rules: ${er.verdict.evaluatedRules.size}
-           |${showERIR.show(er.verdict)}
-           |""".stripMargin
-      )
+object EngineResult extends EngineResultInstances {
 
   def combine[T](data: T, a: EngineResult[T], b: EngineResult[T]): EngineResult[T] =
     EngineResult(
@@ -57,4 +39,20 @@ object EngineResult {
 
   def combineAll[T](data: T, er1: EngineResult[T], erN: EngineResult[T]*): EngineResult[T] =
     (er1 +: erN).toList.reduce((a, b) => combine(data, a, b))
+}
+
+private[erules] trait EngineResultInstances {
+
+  implicit def catsShowInstanceForEngineResult[T](implicit
+    showT: Show[T] = Show.fromToString[T],
+    showERIR: Show[RuleResultsInterpreterVerdict[T]]
+  ): Show[EngineResult[T]] =
+    er =>
+      StringReport.paragraph("ENGINE VERDICT", "#")(
+        s"""
+           |Data: ${showT.show(er.data)}
+           |Rules: ${er.verdict.evaluatedRules.size}
+           |${showERIR.show(er.verdict)}
+           |""".stripMargin
+      )
 }

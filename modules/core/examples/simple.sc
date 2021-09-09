@@ -98,6 +98,7 @@ val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
 import erules.core.RulesEngine
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
+import erules.implicits._
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
@@ -106,4 +107,4 @@ val result = for {
   result <- engine.parEval[IO](person)
 } yield result
 
-Console.println(result.unsafeRunSync().summary)
+Console.println(result.unsafeRunSync().asReport)

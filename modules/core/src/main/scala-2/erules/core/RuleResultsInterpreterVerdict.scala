@@ -3,11 +3,11 @@ package erules.core
 import cats.data.NonEmptyList
 import cats.Show
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.utils.Summarizable
+import erules.core.report.StringReport
 
 /** ADT to define the possible responses of the engine evaluation.
   */
-sealed trait RuleResultsInterpreterVerdict[-T] extends Summarizable {
+sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
 
   /** Result reasons
     */
@@ -30,8 +30,6 @@ sealed trait RuleResultsInterpreterVerdict[-T] extends Summarizable {
     case Allowed(_) => "Allowed"
     case Denied(_)  => "Denied"
   }
-
-  override def summary: String = Show[RuleResultsInterpreterVerdict[T]].show(this)
 }
 object RuleResultsInterpreterVerdict {
 
@@ -48,7 +46,7 @@ object RuleResultsInterpreterVerdict {
 
       val rulesReport: String = t.evaluatedRules
         .map(er =>
-          Summarizable.paragraph(er.rule.fullDescription)(
+          StringReport.paragraph(er.rule.fullDescription)(
             evalRuleShow.show(er)
           )
         )
@@ -61,8 +59,8 @@ object RuleResultsInterpreterVerdict {
       }
 
       s"""Interpreter verdict: $tpe
-        |
-        |$rulesReport
-        |""".stripMargin
+         |
+         |$rulesReport
+         |""".stripMargin
     }
 }

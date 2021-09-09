@@ -1,14 +1,13 @@
 package erules.core
 
 import cats.{Monoid, Show}
-import erules.core.utils.Summarizable
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 
 import scala.annotation.unused
 
 /** ADT to define the possible output of a [[Rule]] evaluation.
   */
-sealed trait RuleVerdict extends Summarizable { this: RuleVerdictBecauseSupport[RuleVerdict] =>
+sealed trait RuleVerdict extends Serializable { this: RuleVerdictBecauseSupport[RuleVerdict] =>
 
   /** Result reasons
     */
@@ -33,8 +32,6 @@ sealed trait RuleVerdict extends Summarizable { this: RuleVerdictBecauseSupport[
     case _: RuleVerdict.Deny   => "Deny"
     case _: RuleVerdict.Ignore => "Ignore"
   }
-
-  override def summary: String = Show[RuleVerdict].show(this)
 }
 private[erules] trait RuleVerdictBecauseSupport[+T <: RuleVerdict] {
 
@@ -57,26 +54,9 @@ private[erules] trait RuleVerdictBecauseSupport[+T <: RuleVerdict] {
   def withoutReasons: T
 }
 
-object RuleVerdict {
+object RuleVerdict extends RuleVerdictInstances {
 
   val noReasons: List[EvalReason] = Nil
-
-  implicit val monoidInstanceForRuleVerdict: Monoid[RuleVerdict] = new Monoid[RuleVerdict] {
-    override def empty: RuleVerdict = Ignore.withoutReasons
-    override def combine(x: RuleVerdict, y: RuleVerdict): RuleVerdict =
-      (x, y) match {
-        case (a: Allow, b: Allow)   => Allow.because(a.reasons ++ b.reasons)
-        case (a: Deny, b: Deny)     => Deny.because(a.reasons ++ b.reasons)
-        case (a: Ignore, b: Ignore) => Ignore.because(a.reasons ++ b.reasons)
-        case (a: Deny, _)           => Deny.because(a.reasons)
-        case (_, b: Deny)           => Deny.because(b.reasons)
-        case (a: Allow, _)          => Allow.because(a.reasons)
-        case (_, b: Allow)          => Allow.because(b.reasons)
-      }
-  }
-
-  implicit val showInstanceForRuleVerdict: Show[RuleVerdict] =
-    e => s"${e.typeName}(${e.reasons})"
 
   //------------------------------ ALLOW ------------------------------
   sealed trait Allow extends RuleVerdict with RuleVerdictBecauseSupport[Allow]
@@ -161,4 +141,24 @@ object RuleVerdict {
         copy(reasons = noReasons)
     }
   }
+}
+
+private[erules] trait RuleVerdictInstances {
+
+  implicit val monoidInstanceForRuleVerdict: Monoid[RuleVerdict] = new Monoid[RuleVerdict] {
+    override def empty: RuleVerdict = Ignore.withoutReasons
+    override def combine(x: RuleVerdict, y: RuleVerdict): RuleVerdict =
+      (x, y) match {
+        case (a: Allow, b: Allow)   => Allow.because(a.reasons ++ b.reasons)
+        case (a: Deny, b: Deny)     => Deny.because(a.reasons ++ b.reasons)
+        case (a: Ignore, b: Ignore) => Ignore.because(a.reasons ++ b.reasons)
+        case (a: Deny, _)           => Deny.because(a.reasons)
+        case (_, b: Deny)           => Deny.because(b.reasons)
+        case (a: Allow, _)          => Allow.because(a.reasons)
+        case (_, b: Allow)          => Allow.because(b.reasons)
+      }
+  }
+
+  implicit val showInstanceForRuleVerdict: Show[RuleVerdict] =
+    e => s"${e.typeName}(${e.reasons})"
 }

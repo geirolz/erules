@@ -1,12 +1,15 @@
-package erules.core.utils
+package erules.core.report
 
-trait Summarizable extends Serializable {
-  def summary: String
-}
-object Summarizable {
+import cats.Show
 
-  val defaultHeaderMaxLen = 60
-  val defaultSeparatorSymbol = "-"
+object StringReport extends StringReportInstances {
+  val defaultHeaderMaxLen: Int = 60
+  val defaultSeparatorSymbol: String = "-"
+
+  def apply[T](implicit re: StringReport[T]): StringReport[T] = re
+
+  def fromShow[T: Show]: StringReport[T] =
+    implicitly[Show[T]].show
 
   def paragraph(
     title: String,
@@ -15,11 +18,11 @@ object Summarizable {
   )(
     body: String
   ): String =
-    s"""|${buildSeparator(title, epSymbol, maxLen)}
+    s"""|${buildSeparatorAsString(title, epSymbol, maxLen)}
         |$body
-        |${buildSeparator("", epSymbol, maxLen)}""".stripMargin
+        |${buildSeparatorAsString("", epSymbol, maxLen)}""".stripMargin
 
-  def buildSeparator(
+  def buildSeparatorAsString(
     message: String = "",
     sepSymbol: String = defaultSeparatorSymbol,
     maxLen: Int = defaultHeaderMaxLen
@@ -32,4 +35,7 @@ object Summarizable {
 
     s"$halfSep$compensator$fixedMessage$halfSep"
   }
+}
+private[erules] trait StringReportInstances {
+  implicit def deriveStringReportFromShow[T: Show]: StringReport[T] = StringReport.fromShow[T]
 }

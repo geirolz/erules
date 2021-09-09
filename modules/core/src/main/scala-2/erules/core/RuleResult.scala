@@ -1,7 +1,6 @@
 package erules.core
 
 import cats.{Eq, Order, Show}
-import erules.core.utils.Summarizable
 import erules.core.RuleVerdict.Deny
 
 import scala.concurrent.duration.FiniteDuration
@@ -11,17 +10,15 @@ case class RuleResult[-T, +V <: RuleVerdict](
   rule: Rule[T],
   verdict: Try[V],
   executionTime: Option[FiniteDuration] = None
-) extends Summarizable {
+) extends Serializable {
 
   def mapRule[TT <: T](f: Rule[TT] => Rule[TT]): RuleResult[TT, V] =
     copy(rule = f(rule))
 
   def drainExecutionTime: RuleResult[T, V] =
     copy(executionTime = None)
-
-  override def summary: String = Show[RuleResult[T, ? <: RuleVerdict]].show(this)
 }
-object RuleResult {
+object RuleResult extends RuleResultInstances {
 
   type Open[-T] = RuleResult[T, RuleVerdict]
 
@@ -36,6 +33,9 @@ object RuleResult {
 
   def denyForSafetyInCaseOfError[T](rule: Rule[T], ex: Throwable): RuleResult[T, Deny] =
     RuleResult(rule, Failure(ex))
+}
+
+private[erules] trait RuleResultInstances {
 
   implicit def catsOrderInstanceForRuleRuleResult[T, V <: RuleVerdict](implicit
     ruleEq: Eq[Rule[T]]
