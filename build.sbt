@@ -1,6 +1,6 @@
 import sbt.project
 val prjname = "erules"
-val org = "com.github.geirolz"
+val org     = "com.github.geirolz"
 inThisBuild(
   List(
     organization := org,
@@ -27,12 +27,19 @@ lazy val erules: Project = project
     description := "A rules engine evaluator",
     organization := org
   )
-  .aggregate(core, scalatest)
+  .aggregate(core, generic, scalatest)
 
 lazy val core: Project =
   buildModule("core", toPublish = true)
     .settings(
       libraryDependencies ++= ProjectDependencies.Core.dedicated
+    )
+
+lazy val generic: Project =
+  buildModule("generic", toPublish = true)
+    .dependsOn(core)
+    .settings(
+      libraryDependencies ++= ProjectDependencies.Generic.dedicated
     )
 
 lazy val scalatest: Project =

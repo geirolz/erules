@@ -70,6 +70,9 @@ sealed trait Rule[-T] extends Serializable {
     *   .contramap(_.citizenship.region)
     *   .targetInfo("citizenship.region")
     * }}}
+    *
+    * NOTE: using `generic` module, with `import erules.generic.implicits.*` you can use
+    * `contramapTarget` to both contramap and add target information.
     */
   def targetInfo(targetInfo: String): Rule[T]
 
@@ -98,6 +101,9 @@ sealed trait Rule[-T] extends Serializable {
     * {{{
     *   val checkUser: Rule[User] = checkRegionIsUK.contramap(_.citizenship.region)
     * }}}
+    *
+    * NOTE: using `generic` module, with `import erules.generic.implicits.*` you can use
+    * `contramapTarget` to both contramap and add target information.
     */
   def contramap[U](cf: U => T): Rule[U]
 
