@@ -18,7 +18,9 @@ object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
 private[erules] trait EvalResultsInterpreterInstances {
 
   class AllowAllNotDeniedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T] =
+    override def interpret[T](
+      report: NonEmptyList[RuleResult.Free[T]]
+    ): RuleResultsInterpreterVerdict[T] =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.one(
@@ -29,7 +31,9 @@ private[erules] trait EvalResultsInterpreterInstances {
   }
 
   class DenyAllNotAllowedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T] =
+    override def interpret[T](
+      report: NonEmptyList[RuleResult.Free[T]]
+    ): RuleResultsInterpreterVerdict[T] =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.one(
@@ -39,7 +43,9 @@ private[erules] trait EvalResultsInterpreterInstances {
       )
   }
 
-  private def partialEval[T](report: NonEmptyList[RuleResult.Free[T]]): Option[RuleResultsInterpreterVerdict[T]] = {
+  private def partialEval[T](
+    report: NonEmptyList[RuleResult.Free[T]]
+  ): Option[RuleResultsInterpreterVerdict[T]] = {
     type Res[+V <: RuleVerdict] = RuleResult[T, V]
 
     report.toList

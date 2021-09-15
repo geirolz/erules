@@ -36,8 +36,9 @@ sealed trait Rule[-T] extends Serializable {
     */
   def describe(description: String): Rule[T]
 
-  /** * Given a large class with nested case class for example. In order to test a single rule without stud all useless
-    * data you may want to create a rule for the specific type and not for the whole class.
+  /** * Given a large class with nested case class for example. In order to test a single rule
+    * without stud all useless data you may want to create a rule for the specific type and not for
+    * the whole class.
     *
     * {{{
     *
@@ -51,14 +52,16 @@ sealed trait Rule[-T] extends Serializable {
     *   }
     * }}}
     *
-    * In this case if you want to apply this rule to a `User` instance con can use the `contramap` method.
+    * In this case if you want to apply this rule to a `User` instance con can use the `contramap`
+    * method.
     *
     * {{{
     *   val checkUser: Rule[User] = checkRegionIsUK.contramap(_.citizenship.region)
     * }}}
     *
-    * But dosing this if you want to keep the information that this rule doesn't check the whole `User` instance but
-    * just a small sub-set of the data you can use `targetInfo` method to add this information to this rule.
+    * But dosing this if you want to keep the information that this rule doesn't check the whole
+    * `User` instance but just a small sub-set of the data you can use `targetInfo` method to add
+    * this information to this rule.
     *
     * The typical value of this method is "string" version of the contramap parameter.
     *
@@ -73,8 +76,9 @@ sealed trait Rule[-T] extends Serializable {
   //map
   /** Contravariant version of the map.
     *
-    * Given a large class with nested case class for example. In order to test a single rule without stud all useless
-    * data you may want to create a rule for the specific type and not for the whole class.
+    * Given a large class with nested case class for example. In order to test a single rule without
+    * stud all useless data you may want to create a rule for the specific type and not for the
+    * whole class.
     *
     * {{{
     *
@@ -88,7 +92,8 @@ sealed trait Rule[-T] extends Serializable {
     *   }
     * }}}
     *
-    * In this case if you want to apply this rule to a `User` instance con can use the `contramap` method.
+    * In this case if you want to apply this rule to a `User` instance con can use the `contramap`
+    * method.
     *
     * {{{
     *   val checkUser: Rule[User] = checkRegionIsUK.contramap(_.citizenship.region)
@@ -101,8 +106,8 @@ sealed trait Rule[-T] extends Serializable {
     */
   def evalRaw(data: T): IO[RuleVerdict]
 
-  /** Eval this rules. The evaluations result is stored into a 'Try', so the `IO` doesn't raise error in case of failed
-    * rule evaluation
+  /** Eval this rules. The evaluations result is stored into a 'Try', so the `IO` doesn't raise
+    * error in case of failed rule evaluation
     */
   final def eval(data: T): IO[RuleResult.Free[T]] =
     evalRaw(data).attempt.timed.map { case (duration, res) =>
@@ -128,10 +133,10 @@ object Rule extends RuleInstances {
 
     def asyncCheck[T](f: T => IO[RuleVerdict]): Rule[T] =
       RuleImpl(
-        f = f,
-        name = $this.name,
+        f           = f,
+        name        = $this.name,
         description = None,
-        targetInfo = None
+        targetInfo  = None
       )
 
     def asyncCheckOrIgnore[T](f: PartialFunction[T, IO[RuleVerdict]]): Rule[T] =
@@ -153,7 +158,7 @@ object Rule extends RuleInstances {
       f: T => IO[RuleVerdict],
       name: String,
       description: Option[String] = None,
-      targetInfo: Option[String] = None
+      targetInfo: Option[String]  = None
     ) extends Rule[T] {
 
       //docs

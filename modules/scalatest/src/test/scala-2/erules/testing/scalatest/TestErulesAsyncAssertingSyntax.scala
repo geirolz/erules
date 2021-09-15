@@ -17,7 +17,9 @@ class TestErulesAsyncAssertingSyntax
     with ErulesAsyncAssertingSyntax
     with Matchers {
 
-  test("RuleResult - ErulesAsyncAssertingSyntax.assertingIgnoringTimes should drain execution times") {
+  test(
+    "RuleResult - ErulesAsyncAssertingSyntax.assertingIgnoringTimes should drain execution times"
+  ) {
     IO(
       RuleResult
         .const("Allow all", RuleVerdict.Allow.withoutReasons)
@@ -27,7 +29,9 @@ class TestErulesAsyncAssertingSyntax
     )
   }
 
-  test("EngineResult - ErulesAsyncAssertingSyntax.assertingIgnoringTimes should drain execution times") {
+  test(
+    "EngineResult - ErulesAsyncAssertingSyntax.assertingIgnoringTimes should drain execution times"
+  ) {
     IO(
       EngineResult(
         data = (),

@@ -9,7 +9,9 @@ trait ErulesAsyncAssertingSyntax { this: Matchers =>
 
   import cats.implicits.*
 
-  implicit class RuleResultAssertingOps[F[_]: Functor, -T, +V <: RuleVerdict](fa: F[RuleResult[T, V]]) {
+  implicit class RuleResultAssertingOps[F[_]: Functor, -T, +V <: RuleVerdict](
+    fa: F[RuleResult[T, V]]
+  ) {
 
     def assertingIgnoringTimes(f: RuleResult[T, V] => Assertion): F[Assertion] =
       fa.map(a => f(a.drainExecutionTime))

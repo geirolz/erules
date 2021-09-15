@@ -8,11 +8,15 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.util.{Failure, Success}
 
-class RulesEngine[T] private (val rules: NonEmptyList[Rule[T]], interpreter: RuleResultsInterpreter) {
+class RulesEngine[T] private (
+  val rules: NonEmptyList[Rule[T]],
+  interpreter: RuleResultsInterpreter
+) {
 
   import cats.implicits.*
 
-  private implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLoggerFromName[IO]("RuleEngine")
+  private implicit val logger: SelfAwareStructuredLogger[IO] =
+    Slf4jLogger.getLoggerFromName[IO]("RuleEngine")
 
   def parEval[F[_]: LiftIO](data: T): F[EngineResult[T]] =
     createResult[F](
@@ -39,7 +43,7 @@ class RulesEngine[T] private (val rules: NonEmptyList[Rule[T]], interpreter: Rul
     evalRes
       .map(evaluatedRules =>
         EngineResult(
-          data = data,
+          data    = data,
           verdict = interpreter.interpret(evaluatedRules)
         )
       )
@@ -55,10 +59,13 @@ class RulesEngine[T] private (val rules: NonEmptyList[Rule[T]], interpreter: Rul
 }
 object RulesEngine {
 
-  def apply[F[_]: MonadThrow, T](rules: NonEmptyList[Rule[T]])(interpreter: RuleResultsInterpreter): F[RulesEngine[T]] =
+  def apply[F[_]: MonadThrow, T](
+    rules: NonEmptyList[Rule[T]]
+  )(interpreter: RuleResultsInterpreter): F[RulesEngine[T]] =
     Rule.findDuplicated(rules) match {
-      case Nil                    => MonadThrow[F].pure(new RulesEngine(rules, interpreter))
-      case duplicatedDescriptions => MonadThrow[F].raiseError(DuplicatedRulesException(duplicatedDescriptions))
+      case Nil => MonadThrow[F].pure(new RulesEngine(rules, interpreter))
+      case duplicatedDescriptions =>
+        MonadThrow[F].raiseError(DuplicatedRulesException(duplicatedDescriptions))
     }
 
   def allowAllNotDenied[F[_]: MonadThrow, T](rules: NonEmptyList[Rule[T]]): F[RulesEngine[T]] =

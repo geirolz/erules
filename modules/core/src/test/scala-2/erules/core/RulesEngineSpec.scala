@@ -141,7 +141,7 @@ class RulesEngineSpec
       val ex1 = new RuntimeException("BOOM")
       val ex2 = new RuntimeException("PUFF")
 
-      val allow1 = Rule("ALLOW").const(Allow.withoutReasons)
+      val allow1  = Rule("ALLOW").const(Allow.withoutReasons)
       val failed1 = Rule("BOOM").failed(ex1)
       val failed2 = Rule("PUFF").failed(ex2)
 
