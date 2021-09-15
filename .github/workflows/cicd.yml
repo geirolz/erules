@@ -29,10 +29,10 @@ jobs:
         # supported scala versions
         include:
           - scala: 2.13.6
-            name: scala2
+            name: Scala2
             test-tasks: coverage test coverageReport
-          - scala: 3.0.1
-            name: scala3
+          - scala: 3.0.2
+            name: Scala3
             test-tasks: test # scoverage doesn’t support Scala 3
 
     steps:
