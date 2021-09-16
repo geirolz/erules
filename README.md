@@ -15,7 +15,7 @@ A lightweight, simple, typed and functional rules engine evaluator using cats co
 eRules supports Scala 2.13 and 3
 
 **Sbt**
-```
+```sbt
   libraryDependencies += "com.github.geirolz" %% "erules-core" % <version>
 ```
 
@@ -88,7 +88,7 @@ val result = for {
 } yield result
 
 //yolo
-result.unsafeRunSync().summary
+result.unsafeRunSync().asReport[String]
 ```
 
 
