@@ -4,12 +4,11 @@ case class Age(value: Int)
 
 case class Citizenship(country: Country)
 case class Person(
- name: String,
- lastName: String,
- age: Age,
- citizenship: Citizenship
- )
-
+  name: String,
+  lastName: String,
+  age: Age,
+  citizenship: Citizenship
+)
 
 //------------- CREATE RULES -------------//
 import erules.core.Rule
@@ -24,8 +23,8 @@ val checkCitizenship: Rule[Citizenship] =
 
 val checkAdultAge: Rule[Age] =
   Rule("Check Age >= 18").check {
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
 val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
@@ -36,8 +35,6 @@ val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-
-
 
 //-------------- RULES ENGINE --------------//
 import erules.core.RulesEngine
@@ -59,12 +56,11 @@ case class Age(value: Int)
 
 case class Citizenship(country: Country)
 case class Person(
- name: String,
- lastName: String,
- age: Age,
- citizenship: Citizenship
- )
-
+  name: String,
+  lastName: String,
+  age: Age,
+  citizenship: Citizenship
+)
 
 //------------- CREATE RULES -------------//
 import erules.core.Rule
@@ -79,8 +75,8 @@ val checkCitizenship: Rule[Citizenship] =
 
 val checkAdultAge: Rule[Age] =
   Rule("Check Age >= 18").check {
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
 val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
@@ -91,8 +87,6 @@ val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
     .targetInfo("person.age")
     .contramap(_.age)
 )
-
-
 
 //-------------- RULES ENGINE --------------//
 import erules.core.RulesEngine
