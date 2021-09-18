@@ -17,13 +17,13 @@ object ProjectDependencies {
 
   object Generic {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scalatest" %% "scalatest" % "3.2.9"
+      "org.scalatest" %% "scalatest" % "3.2.10"
     )
   }
 
   object Scalatest {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scalatest" %% "scalatest" % "3.2.9",
+      "org.scalatest" %% "scalatest" % "3.2.10",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0"
     )
   }
@@ -43,7 +43,7 @@ object ProjectDependencies {
     )
 
   private val tests: Seq[ModuleID] = Seq(
-    "org.scalactic" %% "scalactic" % "3.2.10" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.9" % Test
+    "org.scalactic" %% "scalactic" % "3.2.9" % Test,
+    "org.scalatest" %% "scalatest" % "3.2.10" % Test
   )
 }
