@@ -37,7 +37,7 @@ object ProjectDependencies {
   private val effects: Seq[ModuleID] =
     Seq(
       "org.typelevel" %% "cats-core" % "2.6.1",
-      "org.typelevel" %% "cats-effect" % "3.2.8",
+      "org.typelevel" %% "cats-effect" % "3.2.9",
       "org.typelevel" %% "log4cats-slf4j" % "2.1.1",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
     )
