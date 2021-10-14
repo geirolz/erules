@@ -48,7 +48,7 @@ sealed trait Rule[-T] extends Serializable {
     *
     *   val checkRegionIsUK: Rule[Region] = Rule("Check region is UK").check {
     *       case Region("UK") => Allow.withoutReasons
-    *       case Region(value) => Deny.because(s"Only UK region is accepted! Actual value: $value")
+    *       case Region(value) => Deny.because(s"Only UK region is accepted! Actual value: $$value")
     *   }
     * }}}
     *
@@ -91,7 +91,7 @@ sealed trait Rule[-T] extends Serializable {
     *
     *   val checkRegionIsUK: Rule[Region] = Rule("Check region is UK").check {
     *       case Region("UK") => Allow.withoutReasons
-    *       case Region(value) => Deny.because(s"Only UK region is accepted! Actual value: $value")
+    *       case Region(value) => Deny.because(s"Only UK region is accepted! Actual value: $$value")
     *   }
     * }}}
     *

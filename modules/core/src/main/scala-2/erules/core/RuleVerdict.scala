@@ -13,15 +13,15 @@ sealed trait RuleVerdict extends Serializable { this: RuleVerdictBecauseSupport[
     */
   val reasons: List[EvalReason]
 
-  /** Returns `true` if this is an instance of [[Allow]]
+  /** Returns `true` if this is an instance of `Allow`
     */
   val isAllow: Boolean = this.isInstanceOf[Allow]
 
-  /** Returns `true` if this is an instance of [[Deny]]
+  /** Returns `true` if this is an instance of `Deny`
     */
   val isDeny: Boolean = this.isInstanceOf[Deny]
 
-  /** Returns `true` if this is an instance of [[Ignore]]
+  /** Returns `true` if this is an instance of `Ignore`
     */
   val isIgnore: Boolean = this.isInstanceOf[Ignore]
 

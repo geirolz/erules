@@ -24,7 +24,7 @@ sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
     */
   val isDenied: Boolean = !isAllowed
 
-  /** Returns a string `Allowed` if this is an instance of [[Allowed]] otherwise `Denied`
+  /** Returns a string `Allowed` if this is an instance of `Allowed` otherwise Denied`
     */
   val typeName: String = this match {
     case Allowed(_) => "Allowed"
