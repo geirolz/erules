@@ -20,6 +20,16 @@ eRules supports Scala 2.13 and 3
 ```
 
 
+
+## Glossary
+- **Rule** = the definition of a rule, the *check* is pure and can be async. 
+Each Rule must have a *description*. Each rule can have a *targetInfo* that is a string
+that describe the rule check target.
+- **RuleVerdict** = Is the verdict of a rule, can be `Allow`, `Deny` or `Ignore`. Each kind of verdict can have 0 or more reasons.
+- **RuleResult** = The rule result is just a case class to couple the `Rule` with is result `RuleVerdict` 
+and some other information like the execution time.
+- **EngineVerdict** = Same as `RuleVerdict` but related to the whole engine. Can be `Allowed` or `Denied`
+
 ## How to use
 
 Given these data classes
@@ -68,6 +78,9 @@ val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
 )
 ```
 
+N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
+`contramapTarget` apply contramap and derive the target info by the contramap parameter. The contramap parameter 
+must be inline and have the following form: `_.bar.foo.test`.
 
 Once we defied rules we just need to create the `RuleEngine` to evaluate that rules.
 
@@ -121,4 +134,62 @@ Interpreter verdict: Denied
 
 
 ############################################################
+```
+
+## How to test
+
+### Scalatest
+Using scalatest we can easily test our engine importing the `erules-scalatest` module.
+```sbt
+  libraryDependencies += "com.github.geirolz" %% "erules-scalatest" % <version>
+```
+
+#### Matchers
+```scala
+class MyTest extends AnyFunSuite
+  with ErulesMatchers
+  with Matchers {
+  
+  test("testing engine verdict"){
+
+    val verdict: RuleResultsInterpreterVerdict[String] = ???
+
+    verdict shouldBe denied
+    verdict should not be allowed
+  }
+
+  test("testing rule verdict"){
+
+    val ruleVerdict: RuleVerdict = ???
+
+    ruleVerdict shouldBe allow
+    ruleVerdict should not be deny
+    ruleVerdict should not be ignore
+  }
+}
+```
+
+#### Async effect
+
+For async support we have to mix our test class with `AsyncErulesSpec`.
+N.B. we are even using `AsyncIOSpec` from `cats-effect-testing-scalatest` library in order 
+to support cats `IO` monad.
+
+#### Matchers
+```scala
+class MyTest extends AnyFunSuite
+  with AsyncErulesSpec
+  with AsyncIOSpec
+  with Matchers {
+
+  test("testing rule result") {
+    
+    val rule: Rule[String] = ???
+    val result: IO[RuleResult.Free[String]] = rule.eval("FOO")
+    
+    result.assertingIgnoringTimes(
+      _ shouldBe RuleResult.const("Allow all", RuleVerdict.Allow.withoutReasons)
+    )
+  }
+}
 ```
