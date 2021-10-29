@@ -43,7 +43,7 @@ class RulesEngineSpec
     }
   }
 
-  //--------------------- EVAL --------------------
+  // --------------------- EVAL --------------------
   "RulesEngine.denyAllNotAllowed.eval" should {
 
     "Respond with DENIED when there are no rules for the target" in {

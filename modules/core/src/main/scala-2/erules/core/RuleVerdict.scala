@@ -58,7 +58,7 @@ object RuleVerdict extends RuleVerdictInstances {
 
   val noReasons: List[EvalReason] = Nil
 
-  //------------------------------ ALLOW ------------------------------
+  // ------------------------------ ALLOW ------------------------------
   sealed trait Allow extends RuleVerdict with RuleVerdictBecauseSupport[Allow]
   object Allow extends RuleVerdictBecauseSupport[Allow] {
 
@@ -86,7 +86,7 @@ object RuleVerdict extends RuleVerdictInstances {
     }
   }
 
-  //------------------------------ DENY ------------------------------
+  // ------------------------------ DENY ------------------------------
   sealed trait Deny extends RuleVerdict with RuleVerdictBecauseSupport[Deny]
   object Deny extends RuleVerdictBecauseSupport[Deny] {
 
@@ -114,7 +114,7 @@ object RuleVerdict extends RuleVerdictInstances {
     }
   }
 
-  //------------------------------ IGNORE ------------------------------
+  // ------------------------------ IGNORE ------------------------------
   sealed trait Ignore extends RuleVerdict with RuleVerdictBecauseSupport[Ignore]
   object Ignore extends RuleVerdictBecauseSupport[Ignore] {
 
