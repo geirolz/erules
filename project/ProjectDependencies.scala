@@ -28,7 +28,7 @@ object ProjectDependencies {
     )
   }
 
-  //-------------------------------------------------------//
+  // -------------------------------------------------------//
   lazy val common: Seq[ModuleID] = Seq(
     effects,
     tests

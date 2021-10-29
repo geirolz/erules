@@ -20,7 +20,7 @@ sealed trait Rule[-T] extends Serializable {
     */
   val targetInfo: Option[String]
 
-  //docs
+  // docs
   /** A full description of the rule, that contains name, description and target info where defined.
     */
   def fullDescription: String = {
@@ -76,7 +76,7 @@ sealed trait Rule[-T] extends Serializable {
     */
   def targetInfo(targetInfo: String): Rule[T]
 
-  //map
+  // map
   /** Contravariant version of the map.
     *
     * Given a large class with nested case class for example. In order to test a single rule without
@@ -107,7 +107,7 @@ sealed trait Rule[-T] extends Serializable {
     */
   def contramap[U](cf: U => T): Rule[U]
 
-  //eval
+  // eval
   /** Same as `eval` but has only the `RuleVerdict` value
     */
   def evalRaw(data: T): IO[RuleVerdict]
@@ -124,7 +124,7 @@ sealed trait Rule[-T] extends Serializable {
       )
     }
 
-  //std
+  // std
   override final def equals(obj: Any): Boolean =
     obj != null && obj.isInstanceOf[Rule[T]] && this === obj.asInstanceOf[Rule[T]]
 }
@@ -132,7 +132,7 @@ object Rule extends RuleInstances {
 
   import erules.core.utils.CollectionsUtils.*
 
-  //=================/ BUILDER /=================
+  // =================/ BUILDER /=================
   def apply(name: String): RuleBuilder = new RuleBuilder(name)
 
   class RuleBuilder(name: String) { $this =>
@@ -167,24 +167,24 @@ object Rule extends RuleInstances {
       targetInfo: Option[String]  = None
     ) extends Rule[T] {
 
-      //docs
+      // docs
       def describe(description: String): Rule[T] =
         copy(description = Option(description))
 
       def targetInfo(targetInfo: String): Rule[T] =
         copy(targetInfo = Option(targetInfo))
 
-      //map
+      // map
       def contramap[U](cf: U => T): Rule[U] =
         copy(f = cf.andThen(f))
 
-      //eval
+      // eval
       def evalRaw(data: T): IO[RuleVerdict] =
         f(data)
     }
   }
 
-  //=================/ UTILS /=================
+  // =================/ UTILS /=================
   def findDuplicated[T](rules: NonEmptyList[Rule[T]]): List[Rule[T]] =
     rules.findDuplicatedNem(identity)
 }

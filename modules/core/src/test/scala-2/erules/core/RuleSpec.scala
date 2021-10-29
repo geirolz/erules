@@ -19,7 +19,7 @@ class RuleSpec
     with ErulesAsyncAssertingSyntax
     with ReportValues {
 
-  //------------------------- CONTRAMAP -------------------------
+  // ------------------------- CONTRAMAP -------------------------
   "Rule.contramap" should {
     "Apply the contravariant map widening the type" in {
 
@@ -45,7 +45,7 @@ class RuleSpec
     }
   }
 
-  //------------------------- EVAL ZIP -------------------------
+  // ------------------------- EVAL ZIP -------------------------
   "Rule.asyncCheck.eval" should {
     "return the right result once evaluated" in {
 
@@ -182,7 +182,7 @@ class RuleSpec
     }
   }
 
-  //------------------------- EVAL RAW -------------------------
+  // ------------------------- EVAL RAW -------------------------
   "Rule.asyncCheck.evalRaw" should {
     "return the right result once evaluated" in {
 
@@ -291,7 +291,7 @@ class RuleSpec
     }
   }
 
-  //------------------------- UTILS -------------------------
+  // ------------------------- UTILS -------------------------
   "Rule.findDuplicated" should {
     "return the list of duplicated rules" in {
       case class Foo(x: String, y: Int)

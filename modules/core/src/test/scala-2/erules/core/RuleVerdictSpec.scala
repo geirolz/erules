@@ -17,7 +17,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
 
     "combine multiple RuleVerdict - Allow" in {
 
-      //allow-allow
+      // allow-allow
       Monoid[RuleVerdict].combineAll(
         Seq(
           Allow.because("R1"),
@@ -25,7 +25,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Allow.because("R1").because("R2")
 
-      //allow-deny
+      // allow-deny
       Monoid[RuleVerdict].combineAll(
         Seq(
           Allow.because("R1"),
@@ -33,7 +33,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Deny.because("R2")
 
-      //allow-ignore
+      // allow-ignore
       Monoid[RuleVerdict].combineAll(
         Seq(
           Allow.because("R1"),
@@ -43,7 +43,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
     }
 
     "combine multiple RuleVerdict - Deny" in {
-      //deny-deny
+      // deny-deny
       Monoid[RuleVerdict].combineAll(
         Seq(
           Deny.because("R1"),
@@ -51,7 +51,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Deny.because("R1").because("R2")
 
-      //deny-allow
+      // deny-allow
       Monoid[RuleVerdict].combineAll(
         Seq(
           Deny.because("R1"),
@@ -59,7 +59,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Deny.because("R1")
 
-      //deny-ignore
+      // deny-ignore
       Monoid[RuleVerdict].combineAll(
         Seq(
           Deny.because("R1"),
@@ -70,7 +70,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
 
     "combine multiple RuleVerdict - Ignore" in {
 
-      //ignore-ignore
+      // ignore-ignore
       Monoid[RuleVerdict].combineAll(
         Seq(
           Ignore.because("R1"),
@@ -78,7 +78,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Ignore.because("R1").because("R2")
 
-      //ignore-allow
+      // ignore-allow
       Monoid[RuleVerdict].combineAll(
         Seq(
           Ignore.because("R1"),
@@ -86,7 +86,7 @@ class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
         )
       ) shouldBe Allow.because("R2")
 
-      //ignore-deny
+      // ignore-deny
       Monoid[RuleVerdict].combineAll(
         Seq(
           Ignore.because("R1"),
