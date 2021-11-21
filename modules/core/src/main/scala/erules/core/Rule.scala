@@ -1,10 +1,12 @@
 package erules.core
 
-import cats.{Contravariant, Order, Show}
+import cats.{Contravariant, Eq, Order, Show}
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.implicits.*
 import erules.core.RuleVerdict.Ignore
+
+import scala.util.Try
 
 sealed trait Rule[-T] extends Serializable {
 
@@ -126,7 +128,9 @@ sealed trait Rule[-T] extends Serializable {
 
   // std
   override final def equals(obj: Any): Boolean =
-    obj != null && obj.isInstanceOf[Rule[T]] && this === obj.asInstanceOf[Rule[T]]
+    Try(obj.asInstanceOf[Rule[T]])
+      .map(Eq[Rule[T]].eqv(this, _))
+      .getOrElse(false)
 }
 object Rule extends RuleInstances {
 

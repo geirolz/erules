@@ -9,7 +9,7 @@ object StringReport extends StringReportInstances {
   def apply[T](implicit re: StringReport[T]): StringReport[T] = re
 
   def fromShow[T: Show]: StringReport[T] =
-    implicitly[Show[T]].show
+    (t: T) => Show[T].show(t)
 
   def paragraph(
     title: String,
