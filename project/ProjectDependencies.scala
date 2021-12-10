@@ -24,7 +24,7 @@ object ProjectDependencies {
   object Scalatest {
     lazy val dedicated: Seq[ModuleID] = Seq(
       "org.scalatest" %% "scalatest" % "3.2.10",
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0"
+      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0"
     )
   }
 
@@ -39,7 +39,7 @@ object ProjectDependencies {
       "org.typelevel" %% "cats-core" % "2.7.0",
       "org.typelevel" %% "cats-effect" % "3.3.0",
       "org.typelevel" %% "log4cats-slf4j" % "2.1.1",
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.3.0" % Test
+      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test
     )
 
   private val tests: Seq[ModuleID] = Seq(
