@@ -7,12 +7,12 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success, Try}
 
 case class RuleResult[-T, +V <: RuleVerdict](
-  rule: Rule[T],
+  rule: AnyTypedRule[T],
   verdict: Try[V],
   executionTime: Option[FiniteDuration] = None
 ) extends Serializable {
 
-  def mapRule[TT <: T](f: Rule[TT] => Rule[TT]): RuleResult[TT, V] =
+  def mapRule[TT <: T](f: AnyTypedRule[TT] => AnyTypedRule[TT]): RuleResult[TT, V] =
     copy(rule = f(rule))
 
   def drainExecutionTime: RuleResult[T, V] =
@@ -22,23 +22,23 @@ object RuleResult extends RuleResultInstances {
 
   type Free[-T] = RuleResult[T, RuleVerdict]
 
-  def const[V <: RuleVerdict](ruleName: String, v: V): RuleResult[Any, V] =
-    RuleResult(Rule(ruleName).const(v), Success(v))
+  def const[T, V <: RuleVerdict](ruleName: String, v: V): RuleResult[T, V] =
+    RuleResult(Rule(ruleName).const[Try, T](v), Success(v))
 
-  def failed[V <: RuleVerdict](ruleName: String, ex: Throwable): RuleResult[Any, V] =
-    RuleResult(Rule(ruleName).failed(ex), Failure(ex))
+  def failed[T, V <: RuleVerdict](ruleName: String, ex: Throwable): RuleResult[T, V] =
+    RuleResult(Rule(ruleName).failed[Try, T](ex), Failure(ex))
 
-  def noMatch[V <: RuleVerdict](v: V): RuleResult[Any, V] =
+  def noMatch[T, V <: RuleVerdict](v: V): RuleResult[T, V] =
     const("No match", v)
 
-  def denyForSafetyInCaseOfError[T](rule: Rule[T], ex: Throwable): RuleResult[T, Deny] =
+  def denyForSafetyInCaseOfError[T](rule: AnyTypedRule[T], ex: Throwable): RuleResult[T, Deny] =
     RuleResult(rule, Failure(ex))
 }
 
 private[erules] trait RuleResultInstances {
 
   implicit def catsOrderInstanceForRuleRuleResult[T, V <: RuleVerdict](implicit
-    ruleEq: Eq[Rule[T]]
+    ruleEq: Eq[AnyTypedRule[T]]
   ): Order[RuleResult[T, V]] =
     Order.from((x, y) =>
       if (

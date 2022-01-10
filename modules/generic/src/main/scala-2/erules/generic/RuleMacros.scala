@@ -6,7 +6,7 @@ import scala.annotation.{tailrec, unused}
 import scala.reflect.macros.blackbox
 
 private[generic] trait RuleMacros {
-  implicit class RuleMacrosOps[T](@unused rule: Rule[T]) {
+  implicit class RuleMacrosOps[F[_], T](@unused rule: Rule[F, T]) {
 
     /** Contramap `Rule` and add target info invoking `targetInfo` and passing the expression of the
       * map function `f`
@@ -26,7 +26,7 @@ private[generic] trait RuleMacros {
       * @see
       *   [[Rule.contramap()]] and [[Rule.targetInfo()]] for further information
       */
-    def contramapTarget[U](@unused path: U => T): Rule[U] =
+    def contramapTarget[U](@unused path: U => T): Rule[F, U] =
       macro RuleImplMacros.contramapTarget[U, T]
   }
 }

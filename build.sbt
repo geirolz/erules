@@ -1,83 +1,102 @@
 import sbt.project
-val prjname = "erules"
+import ModuleMdocPlugin.autoImport.mdocScalacOptions
+
+val prjName = "erules"
 val org     = "com.github.geirolz"
-inThisBuild(
-  List(
-    organization := org,
-    homepage := Some(url(s"https://github.com/geirolz/$prjname")),
-    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    developers := List(
-      Developer(
-        "DavidGeirola",
-        "David Geirola",
-        "david.geirola@gmail.com",
-        url("https://github.com/geirolz")
-      )
-    )
-  )
-)
 
 //## global project to no publish ##
-lazy val erules: Project = project
+lazy val fly4s: Project = project
   .in(file("."))
-  .settings(allBaseSettings)
-  .settings(noPublishSettings)
   .settings(
-    name := "erules",
+    name := prjName,
     description := "A rules engine evaluator",
-    organization := org
+    organization := org,
+    inThisBuild(
+      List(
+        organization := org,
+        homepage := Some(url(s"https://github.com/geirolz/$prjName")),
+        licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+        developers := List(
+          Developer(
+            "DavidGeirola",
+            "David Geirola",
+            "david.geirola@gmail.com",
+            url("https://github.com/geirolz")
+          )
+        )
+      )
+    ),
+    allSettings,
+    noPublishSettings
   )
   .aggregate(core, generic, scalatest)
 
 lazy val core: Project =
-  buildModule("core", toPublish = true)
-    .settings(
-      libraryDependencies ++= ProjectDependencies.Core.dedicated
-    )
+  buildModule(
+    prjModuleName = "core",
+    toPublish     = true
+  ).settings(
+    libraryDependencies ++= ProjectDependencies.Core.dedicated
+  )
 
 lazy val generic: Project =
-  buildModule("generic", toPublish = true)
-    .dependsOn(core)
+  buildModule(
+    prjModuleName = "generic",
+    toPublish     = true
+  ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Generic.dedicated
     )
 
 lazy val scalatest: Project =
-  buildModule("scalatest", toPublish = true)
-    .dependsOn(core)
+  buildModule(
+    prjModuleName = "scalatest",
+    toPublish     = true
+  ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Scalatest.dedicated
     )
 
 //=============================== MODULES UTILS ===============================
-def buildModule(path: String, toPublish: Boolean = false): Project = {
-  val id = path.split("-").reduce(_ + _.capitalize)
-  Project(id, file(s"modules/$path"))
-    .configure(buildProject(path, toPublish))
-}
+def buildModule(prjModuleName: String, toPublish: Boolean, folder: String = "modules"): Project = {
+  val keys       = prjModuleName.split("-")
+  val id         = keys.reduce(_ + _.capitalize)
+  val docName    = keys.mkString(" ")
+  val prjFile    = file(s"$folder/$prjModuleName")
+  val docNameStr = s"$prjName $docName"
 
-def buildProject(path: String, toPublish: Boolean = false)(project: Project) = {
-  val docName = path.split("-").mkString(" ")
-  project.settings(
-    description := s"$prjname $docName",
-    moduleName := s"$prjname-$path",
-    name := s"$prjname $docName",
-    publish / skip := !toPublish,
-    allBaseSettings
-  )
+  Project(id, prjFile)
+    .settings(
+      description := moduleName.value,
+      moduleName := s"$prjName-$prjModuleName",
+      name := s"$prjName $docName",
+      publish / skip := !toPublish,
+      mdocIn := file(s"$folder/docs"),
+      mdocOut := file(folder),
+      mdocScalacOptions := Seq("-Xsource:3"),
+      mdocVariables := Map(
+        "ORG"         -> org,
+        "PRJ_NAME"    -> prjName,
+        "DOCS_TITLE"  -> docNameStr.split(" ").map(_.capitalize).mkString(" "),
+        "MODULE_NAME" -> moduleName.value,
+        "VERSION"     -> previousStableVersion.value.getOrElse("<version>")
+      ),
+      allSettings
+    )
+    .enablePlugins(ModuleMdocPlugin)
 }
 
 //=============================== SETTINGS ===============================
-lazy val allBaseSettings = baseSettings
+lazy val allSettings = baseSettings
 
-lazy val noPublishSettings = Seq(
+lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
   publish := {},
   publishLocal := {},
   publishArtifact := false,
   publish / skip := true
 )
 
-lazy val baseSettings = Seq(
+lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   // scala
   crossScalaVersions := List("2.13.8", "3.1.0"),
   scalaVersion := crossScalaVersions.value.head,

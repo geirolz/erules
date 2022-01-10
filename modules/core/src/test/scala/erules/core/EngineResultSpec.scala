@@ -16,12 +16,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
 
       case class Foo(value: String)
 
-      val rule1 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
@@ -59,12 +59,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
 
       case class Foo(value: String)
 
-      val rule1 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
@@ -101,12 +101,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
 
       case class Foo(value: String)
 
-      val rule1 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
 
-      val rule2 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
@@ -143,12 +143,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
 
       case class Foo(value: String)
 
-      val rule1 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
 
-      val rule2 = Rule("Check Foo").checkOrIgnore[Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
@@ -189,17 +189,17 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
 
       case class Foo(value: String)
 
-      val rule1 = Rule("Check Foo 1").checkOrIgnore[Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo 1").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2 = Rule("Check Foo 2").checkOrIgnore[Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo 2").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule3 = Rule("Check Foo 3").checkOrIgnore[Foo] {
+      val rule3: PureRule[Foo] = Rule("Check Foo 3").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }

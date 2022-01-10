@@ -1,14 +1,14 @@
 package erules.core
 
-import cats.{Contravariant, Eq, Order, Show}
+import cats.{Applicative, ApplicativeThrow, Contravariant, Eq, Functor, Order, Show}
 import cats.data.NonEmptyList
-import cats.effect.IO
+import cats.effect.Clock
 import cats.implicits.*
 import erules.core.RuleVerdict.Ignore
 
 import scala.util.Try
 
-sealed trait Rule[-T] extends Serializable {
+sealed trait Rule[+F[_], -T] extends Serializable {
 
   /** A string to describe in summary this rule.
     */
@@ -22,7 +22,6 @@ sealed trait Rule[-T] extends Serializable {
     */
   val targetInfo: Option[String]
 
-  // docs
   /** A full description of the rule, that contains name, description and target info where defined.
     */
   def fullDescription: String = {
@@ -36,7 +35,7 @@ sealed trait Rule[-T] extends Serializable {
 
   /** Set rule description
     */
-  def describe(description: String): Rule[T]
+  def describe(description: String): Rule[F, T]
 
   /** * Given a large class with nested case class for example. In order to test a single rule
     * without stud all useless data you may want to create a rule for the specific type and not for
@@ -76,7 +75,7 @@ sealed trait Rule[-T] extends Serializable {
     * NOTE: using `generic` module, with `import erules.generic.implicits.*` you can use
     * `contramapTarget` to both contramap and add target information.
     */
-  def targetInfo(targetInfo: String): Rule[T]
+  def targetInfo(targetInfo: String): Rule[F, T]
 
   // map
   /** Contravariant version of the map.
@@ -107,19 +106,32 @@ sealed trait Rule[-T] extends Serializable {
     * NOTE: using `generic` module, with `import erules.generic.implicits.*` you can use
     * `contramapTarget` to both contramap and add target information.
     */
-  def contramap[U](cf: U => T): Rule[U]
+  def contramap[U](cf: U => T): Rule[F, U]
+
+  /** Lift a pure, side-effect free rule with effect `Id[_]` to specified `G[_]`. Value is lifted as
+    * a pure effect using `Applicative`
+    * @tparam G
+    *   Effect
+    * @return
+    *   A lifted rule to specifed effect type `G`
+    */
+  def covary[G[_]: Applicative](implicit env: F[RuleVerdict] <:< RuleVerdict): Rule[G, T]
 
   // eval
   /** Same as `eval` but has only the `RuleVerdict` value
     */
-  def evalRaw(data: T): IO[RuleVerdict]
+  def evalRaw[FF[X] >: F[X], TT <: T](data: TT): FF[RuleVerdict]
 
-  /** Eval this rules. The evaluations result is stored into a 'Try', so the `IO` doesn't raise
-    * error in case of failed rule evaluation
+  /** Eval this rules. The evaluations result is stored into a 'Try', so the `ApplicativeError`
+    * doesn't raise error in case of failed rule evaluation
     */
-  final def eval(data: T): IO[RuleResult.Free[T]] =
-    evalRaw(data).attempt.timed.map { case (duration, res) =>
-      RuleResult(
+  final def eval[FF[X] >: F[X], TT <: T](
+    data: TT
+  )(implicit F: ApplicativeThrow[FF], C: Clock[FF]): FF[RuleResult.Free[TT]] =
+    C.timed(
+      evalRaw[FF, TT](data).attempt
+    ).map { case (duration, res) =>
+      RuleResult[TT, RuleVerdict](
         rule = this,
         res.toTry,
         executionTime = Some(duration)
@@ -128,10 +140,11 @@ sealed trait Rule[-T] extends Serializable {
 
   // std
   override final def equals(obj: Any): Boolean =
-    Try(obj.asInstanceOf[Rule[T]])
-      .map(Eq[Rule[T]].eqv(this, _))
+    Try(obj.asInstanceOf[Rule[F, T]])
+      .map(Eq[Rule[F, T]].eqv(this, _))
       .getOrElse(false)
 }
+
 object Rule extends RuleInstances {
 
   import erules.core.utils.CollectionsUtils.*
@@ -139,9 +152,9 @@ object Rule extends RuleInstances {
   // =================/ BUILDER /=================
   def apply(name: String): RuleBuilder = new RuleBuilder(name)
 
-  class RuleBuilder(name: String) { $this =>
+  class RuleBuilder private[erules] (name: String) { $this =>
 
-    def asyncCheck[T](f: T => IO[RuleVerdict]): Rule[T] =
+    def apply[F[_], T](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
       RuleImpl(
         f           = f,
         name        = $this.name,
@@ -149,58 +162,61 @@ object Rule extends RuleInstances {
         targetInfo  = None
       )
 
-    def asyncCheckOrIgnore[T](f: PartialFunction[T, IO[RuleVerdict]]): Rule[T] =
-      asyncCheck[T](f.lift.andThen(_.getOrElse(Ignore.noMatch.pure[IO])))
+    def partially[F[_]: Applicative, T](
+      f: PartialFunction[T, F[RuleVerdict]]
+    ): Rule[F, T] =
+      apply(
+        f.lift.andThen(_.getOrElse(Applicative[F].pure(Ignore.noMatch)))
+      )
 
-    def check[T](f: T => RuleVerdict): Rule[T] =
-      asyncCheck[T](f.andThen(IO.pure))
+    def failed[F[_]: ApplicativeThrow, T](ex: Throwable): Rule[F, T] =
+      apply(_ => ApplicativeThrow[F].raiseError(ex))
 
-    def checkOrIgnore[T](f: PartialFunction[T, RuleVerdict]): Rule[T] =
-      asyncCheckOrIgnore[T](f.andThen(t => IO.pure(t)))
+    def const[F[_]: Applicative, T](v: RuleVerdict): Rule[F, T] =
+      apply(_ => Applicative[F].pure(v))
+  }
 
-    def const[T](v: RuleVerdict): Rule[T] =
-      check[T](_ => v)
+  private case class RuleImpl[+F[_], -TT](
+    f: TT => F[RuleVerdict],
+    name: String,
+    description: Option[String] = None,
+    targetInfo: Option[String]  = None
+  ) extends Rule[F, TT] {
 
-    def failed[T](ex: Throwable): Rule[T] =
-      asyncCheck(_ => IO.raiseError(ex))
+    // docs
+    def describe(description: String): Rule[F, TT] =
+      copy(description = Option(description))
 
-    private case class RuleImpl[-T](
-      f: T => IO[RuleVerdict],
-      name: String,
-      description: Option[String] = None,
-      targetInfo: Option[String]  = None
-    ) extends Rule[T] {
+    def targetInfo(targetInfo: String): Rule[F, TT] =
+      copy(targetInfo = Option(targetInfo))
 
-      // docs
-      def describe(description: String): Rule[T] =
-        copy(description = Option(description))
+    // map
+    def contramap[U](cf: U => TT): Rule[F, U] =
+      copy(f = cf.andThen(f))
 
-      def targetInfo(targetInfo: String): Rule[T] =
-        copy(targetInfo = Option(targetInfo))
+    // eval
+    def evalRaw[FF[X] >: F[X], TT2 <: TT](data: TT2): FF[RuleVerdict] =
+      f(data)
 
-      // map
-      def contramap[U](cf: U => T): Rule[U] =
-        copy(f = cf.andThen(f))
-
-      // eval
-      def evalRaw(data: T): IO[RuleVerdict] =
-        f(data)
-    }
+    def covary[G[_]: Applicative](implicit
+      env: F[RuleVerdict] <:< RuleVerdict
+    ): Rule[G, TT] =
+      copy[G, TT](f = f.andThen(fa => Applicative[G].pure(env(fa))))
   }
 
   // =================/ UTILS /=================
-  def findDuplicated[T](rules: NonEmptyList[Rule[T]]): List[Rule[T]] =
+  def findDuplicated[F[_], T](rules: NonEmptyList[Rule[F, T]]): List[Rule[F, T]] =
     rules.findDuplicatedNem(identity)
 }
 
 private[erules] trait RuleInstances {
 
-  implicit def catsContravariantForRule[T]: Contravariant[Rule] =
-    new Contravariant[Rule] {
-      override def contramap[A, B](fa: Rule[A])(f: B => A): Rule[B] = fa.contramap(f)
+  implicit def catsContravariantForRule[F[_], T]: Contravariant[Rule[F, *]] =
+    new Contravariant[Rule[F, *]] {
+      override def contramap[A, B](fa: Rule[F, A])(f: B => A): Rule[F, B] = fa.contramap(f)
     }
 
-  implicit def catsOrderInstanceForRule[T]: Order[Rule[T]] =
+  implicit def catsOrderInstanceForRule[F[_], T]: Order[Rule[F, T]] =
     Order.from((x, y) =>
       if (
         x != null
@@ -212,6 +228,10 @@ private[erules] trait RuleInstances {
       else -1
     )
 
-  implicit def catsShowInstanceForRule[T]: Show[Rule[T]] =
+  implicit def catsShowInstanceForRule[F[_], T]: Show[Rule[F, T]] =
     r => s"Rule('${r.fullDescription}')"
+
+  implicit class PureRuleOps[F[_]: Functor, T](fa: F[PureRule[T]]) {
+    def covaryAll[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
+  }
 }

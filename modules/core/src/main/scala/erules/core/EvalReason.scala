@@ -19,6 +19,5 @@ object EvalReason extends EvalReasonInstances {
 }
 
 private[erules] trait EvalReasonInstances {
-  implicit val showInstanceForEvalReason: Show[EvalReason] =
-    r => s"${r.message}"
+  implicit val showInstanceForEvalReason: Show[EvalReason] = _.message
 }

@@ -3,6 +3,7 @@ package erules.core
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
+import cats.Id
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
 import erules.core.RulesEngine.DuplicatedRulesException
 import erules.core.RuleVerdict.{Allow, Deny}
@@ -23,21 +24,22 @@ class RulesEngineSpec
 
   "RulesEngine" should {
     "Return a DuplicatedRulesException with duplicated rules" in {
+
       case class Foo(x: String, y: Int)
-      val allowYEqZero1: Rule[Foo] = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
-        Allow.withoutReasons
-      }
-      val allowYEqZero2: Rule[Foo] = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero1: Rule[Id, Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      RulesEngine
-        .denyAllNotAllowed[Try, Foo](
-          NonEmptyList.of(
-            allowYEqZero1,
-            allowYEqZero2
-          )
+      val allowYEqZero2: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+        Allow.withoutReasons
+      }
+
+      RulesEngine[Try]
+        .withRules(
+          allowYEqZero1,
+          allowYEqZero2
         )
+        .denyAllNotAllowed
         .failed
         .get shouldBe a[DuplicatedRulesException]
     }
@@ -49,15 +51,16 @@ class RulesEngineSpec
     "Respond with DENIED when there are no rules for the target" in {
 
       case class Foo(x: String, y: Int)
-      val allowYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .denyAllNotAllowed[Try, Foo](NonEmptyList.of(allowYEqZero))
-        .get
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(allowYEqZero)
+          .denyAllNotAllowed
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 1))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
       result.asserting(
         _ shouldBe EngineResult[Foo](
@@ -74,24 +77,23 @@ class RulesEngineSpec
     "Respond with DENIED when a rule Deny the target" in {
 
       case class Foo(x: String, y: Int)
-      val denyXEqTest = Rule("Check X value").checkOrIgnore[Foo] { case Foo("TEST", _) =>
+      val denyXEqTest: PureRule[Foo] = Rule("Check X value").partially { case Foo("TEST", _) =>
         Deny.withoutReasons
       }
 
-      val allowYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .denyAllNotAllowed[Try, Foo](
-          NonEmptyList.of(
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(
             denyXEqTest,
             allowYEqZero
           )
-        )
-        .get
+          .denyAllNotAllowed
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 0))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
       result
         .assertingIgnoringTimes(
@@ -110,15 +112,16 @@ class RulesEngineSpec
 
       case class Foo(x: String, y: Int)
 
-      val allowYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .denyAllNotAllowed[Try, Foo](NonEmptyList.of(allowYEqZero))
-        .get
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(allowYEqZero)
+          .denyAllNotAllowed
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 0))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
       result.assertingIgnoringTimes(
         _ shouldBe EngineResult[Foo](
@@ -141,21 +144,20 @@ class RulesEngineSpec
       val ex1 = new RuntimeException("BOOM")
       val ex2 = new RuntimeException("PUFF")
 
-      val allow1  = Rule("ALLOW").const(Allow.withoutReasons)
-      val failed1 = Rule("BOOM").failed(ex1)
-      val failed2 = Rule("PUFF").failed(ex2)
+      val allow1: RuleIO[Foo]  = Rule("ALLOW").const[IO, Foo](Allow.withoutReasons)
+      val failed1: RuleIO[Foo] = Rule("BOOM").failed[IO, Foo](ex1)
+      val failed2: RuleIO[Foo] = Rule("PUFF").failed[IO, Foo](ex2)
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .denyAllNotAllowed[Try, Foo](
-          NonEmptyList.of(
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(
             allow1,
             failed1,
             failed2
           )
-        )
-        .get
+          .denyAllNotAllowed
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 1))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
       result.assertingIgnoringTimes(
         _ shouldBe EngineResult[Foo](
@@ -173,15 +175,16 @@ class RulesEngineSpec
     "Respond with ALLOWED when there are no rules for the target" in {
 
       case class Foo(x: String, y: Int)
-      val denyYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val denyYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Deny.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .allowAllNotDenied[Try, Foo](NonEmptyList.of(denyYEqZero))
-        .get
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(denyYEqZero)
+          .allowAllNotDenied
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 1))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
       result.asserting(
         _ shouldBe EngineResult[Foo](
@@ -198,24 +201,23 @@ class RulesEngineSpec
     "Respond with DENIED when a rule Deny the target" in {
 
       case class Foo(x: String, y: Int)
-      val denyXEqTest = Rule("Check X value").checkOrIgnore[Foo] { case Foo("TEST", _) =>
+      val denyXEqTest: Rule[Id, Foo] = Rule("Check X value").partially { case Foo("TEST", _) =>
         Deny.withoutReasons
       }
 
-      val allowYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .allowAllNotDenied[Try, Foo](
-          NonEmptyList.of(
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules[Id, Foo](
             denyXEqTest,
             allowYEqZero
           )
-        )
-        .get
+          .allowAllNotDenied
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 0))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
       result.assertingIgnoringTimes(
         _ shouldBe EngineResult[Foo](
@@ -233,15 +235,16 @@ class RulesEngineSpec
 
       case class Foo(x: String, y: Int)
 
-      val allowYEqZero = Rule("Check Y value").checkOrIgnore[Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: RulesEngine[Foo] = RulesEngine
-        .allowAllNotDenied[Try, Foo](NonEmptyList.of(allowYEqZero))
-        .get
+      val engine: IO[RulesEngineIO[Foo]] =
+        RulesEngine[IO]
+          .withRules(allowYEqZero)
+          .allowAllNotDenied
 
-      val result: IO[EngineResult[Foo]] = engine.parEval(Foo("TEST", 0))
+      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
       result.assertingIgnoringTimes(
         _ shouldBe EngineResult[Foo](
