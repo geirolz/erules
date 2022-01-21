@@ -7,7 +7,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.TryValues
 import org.scalatest.matchers.should.Matchers
 
-import scala.util.Failure
+import scala.annotation.unused
+import scala.util.{Failure, Try}
 
 class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValues {
 
@@ -15,7 +16,6 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Allowed for all not all explicitly denied values" in {
 
-      case class Foo(x: String, y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.allowAllNotDenied
 
       val result = interpreter.interpret(
@@ -33,7 +33,6 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Allowed for allowed value" in {
 
-      case class Foo(x: String, y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.allowAllNotDenied
 
       val result = interpreter.interpret(
@@ -51,7 +50,6 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Denied for if there is at least one Deny" in {
 
-      case class Foo(x: String, y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.allowAllNotDenied
 
       val result = interpreter.interpret(
@@ -70,12 +68,12 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Denied for if there is at least one evaluated rule in error" in {
 
-      case class Foo(x: String, y: Int)
+      case class Foo()
       val interpreter = RuleResultsInterpreter.Defaults.allowAllNotDenied
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[Foo] = Rule("Allow all").failed(ex)
+      val allowAll: Rule[Try, Foo] = Rule("Allow all").failed[Try, Foo](ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(
@@ -95,7 +93,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Denied for all not all explicitly denied values" in {
 
-      case class Foo(x: String, y: Int)
+      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val result = interpreter.interpret(
@@ -113,7 +111,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Allowed for allowed value" in {
 
-      case class Foo(x: String, y: Int)
+      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val result = interpreter.interpret(
@@ -131,7 +129,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Denied for if there is at least one Deny" in {
 
-      case class Foo(x: String, y: Int)
+      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val result = interpreter.interpret(
@@ -143,19 +141,19 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
       result shouldBe Denied(
         NonEmptyList.of(
-          RuleResult.const("Deny all", Deny.withoutReasons)
+          RuleResult.const[Foo, Deny]("Deny all", Deny.withoutReasons)
         )
       )
     }
 
     "return Denied for if there is at least one evaluated rule in error" in {
 
-      case class Foo(x: String, y: Int)
+      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[Foo] = Rule("Allow all").failed(ex)
+      val allowAll: Rule[Try, Foo] = Rule("Allow all").failed[Try, Foo](ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(

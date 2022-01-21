@@ -24,7 +24,7 @@ private[erules] trait EvalResultsInterpreterInstances {
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.one(
-            RuleResult.noMatch(Allow.allNotExplicitlyDenied)
+            RuleResult.noMatch[T, Allow](Allow.allNotExplicitlyDenied)
           )
         )
       )
@@ -37,7 +37,7 @@ private[erules] trait EvalResultsInterpreterInstances {
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.one(
-            RuleResult.noMatch(Deny.allNotExplicitlyAllowed)
+            RuleResult.noMatch[T, Deny](Deny.allNotExplicitlyAllowed)
           )
         )
       )
@@ -50,13 +50,13 @@ private[erules] trait EvalResultsInterpreterInstances {
 
     report.toList
       .flatMap {
-        case _ @RuleResult(_: Rule[T], Success(_: Ignore), _) =>
+        case _ @RuleResult(_: Rule[?, T], Success(_: Ignore), _) =>
           None
-        case _ @RuleResult(r: Rule[T], Failure(ex), _) =>
-          Some(Left(RuleResult.denyForSafetyInCaseOfError(r, ex)))
-        case re @ RuleResult(_: Rule[T], Success(_: Deny), _) =>
+        case _ @RuleResult(r: Rule[?, T], Failure(ex), _) =>
+          Some(Left(RuleResult.denyForSafetyInCaseOfError(r.asInstanceOf[Rule[Nothing, T]], ex)))
+        case re @ RuleResult(_: Rule[?, T], Success(_: Deny), _) =>
           Some(Left(re.asInstanceOf[Res[Deny]]))
-        case re @ RuleResult(_: Rule[T], Success(_: Allow), _) =>
+        case re @ RuleResult(_: Rule[?, T], Success(_: Allow), _) =>
           Some(Right(re.asInstanceOf[Res[Allow]]))
       }
       .partitionMap[Res[Deny], Res[Allow]](identity) match {

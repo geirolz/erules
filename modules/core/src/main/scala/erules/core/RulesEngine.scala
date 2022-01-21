@@ -1,45 +1,55 @@
 package erules.core
 
-import cats.effect.{IO, LiftIO}
-import cats.MonadThrow
+import cats.{Functor, Id, MonadThrow, Parallel}
 import cats.data.NonEmptyList
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import cats.effect.kernel.Async
+import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
+import scala.annotation.unused
 import scala.util.{Failure, Success}
 
-class RulesEngine[T] private (
-  val rules: NonEmptyList[Rule[T]],
-  interpreter: RuleResultsInterpreter
+case class RulesEngine[F[_], T] private (
+  rules: NonEmptyList[Rule[F, T]],
+  private val interpreter: RuleResultsInterpreter,
+  private val logger: Option[StructuredLogger[F]] = None
 ) {
 
   import cats.implicits.*
 
-  private implicit val logger: SelfAwareStructuredLogger[IO] =
-    Slf4jLogger.getLoggerFromName[IO]("RuleEngine")
+  // logger
+  def withLogger(_logger: StructuredLogger[F]): RulesEngine[F, T] =
+    copy(logger = Some(_logger))
 
-  def parEval[F[_]: LiftIO](data: T): F[EngineResult[T]] =
-    createResult[F](
+  def withLogger(implicit @unused F: Async[F]): RulesEngine[F, T] =
+    copy(logger = Some(Slf4jLogger.getLogger[F]))
+
+  // execution
+  def parEval(data: T)(implicit
+    F: Async[F],
+    P: Parallel[F]
+  ): F[EngineResult[T]] =
+    createResult(
       data,
       rules.parTraverse(evalZipRuleLogging(data, _))
     )
 
-  def parEvalN[F[_]: LiftIO](data: T, parallelismLevel: Int): F[EngineResult[T]] =
-    createResult[F](
+  def parEvalN(data: T, parallelismLevel: Int)(implicit F: Async[F]): F[EngineResult[T]] =
+    createResult(
       data,
-      IO.parTraverseN(parallelismLevel)(rules)(evalZipRuleLogging(data, _))
+      F.parTraverseN(parallelismLevel)(rules)(evalZipRuleLogging(data, _))
     )
 
-  def seqEval[F[_]: LiftIO](data: T): F[EngineResult[T]] =
-    createResult[F](
+  def seqEval(data: T)(implicit F: Async[F]): F[EngineResult[T]] =
+    createResult(
       data,
       rules.map(evalZipRuleLogging(data, _)).sequence
     )
 
-  private def createResult[F[_]: LiftIO](
+  private def createResult(
     data: T,
-    evalRes: IO[NonEmptyList[RuleResult.Free[T]]]
-  ): F[EngineResult[T]] =
+    evalRes: F[NonEmptyList[RuleResult.Free[T]]]
+  )(implicit F: Functor[F]): F[EngineResult[T]] =
     evalRes
       .map(evaluatedRules =>
         EngineResult(
@@ -47,34 +57,72 @@ class RulesEngine[T] private (
           verdict = interpreter.interpret(evaluatedRules)
         )
       )
-      .to[F]
 
-  private def evalZipRuleLogging(data: T, rule: Rule[T]): IO[RuleResult.Free[T]] =
+  private def evalZipRuleLogging(data: T, rule: Rule[F, T])(implicit
+    F: Async[F]
+  ): F[RuleResult.Free[T]] = {
     rule
       .eval(data)
       .flatTap {
-        case RuleResult(_, Success(_), _)     => IO.unit
-        case RuleResult(rule, Failure(ex), _) => logger.info(ex)(s"$rule failed!")
+        case RuleResult(_, Success(_), _) => F.unit
+        case RuleResult(rule, Failure(ex), _) =>
+          logger match {
+            case Some(l) => l.info(ex)(s"$rule failed!")
+            case None    => F.unit
+          }
       }
+  }
 }
 object RulesEngine {
 
-  def apply[F[_]: MonadThrow, T](
-    rules: NonEmptyList[Rule[T]]
-  )(interpreter: RuleResultsInterpreter): F[RulesEngine[T]] =
-    Rule.findDuplicated(rules) match {
-      case Nil => MonadThrow[F].pure(new RulesEngine(rules, interpreter))
-      case duplicatedDescriptions =>
-        MonadThrow[F].raiseError(DuplicatedRulesException(duplicatedDescriptions))
-    }
+  def apply[F[_]: MonadThrow]: RulesEngineRulesBuilder[F] =
+    new RulesEngineRulesBuilder[F]
 
-  def allowAllNotDenied[F[_]: MonadThrow, T](rules: NonEmptyList[Rule[T]]): F[RulesEngine[T]] =
-    RulesEngine[F, T](rules)(RuleResultsInterpreter.Defaults.allowAllNotDenied)
+  class RulesEngineRulesBuilder[F[_]: MonadThrow] private[RulesEngine] () {
 
-  def denyAllNotAllowed[F[_]: MonadThrow, T](rules: NonEmptyList[Rule[T]]): F[RulesEngine[T]] =
-    RulesEngine[F, T](rules)(RuleResultsInterpreter.Defaults.denyAllNotAllowed)
+    // effect
+    def withRules[T](
+      head1: Rule[F, T],
+      tail: Rule[F, T]*
+    ): RulesEngineIntBuilder[F, T] =
+      withRules[T](NonEmptyList.of[Rule[F, T]](head1, tail*))
 
-  case class DuplicatedRulesException(duplicates: List[Rule[?]])
+    def withRules[T](rules: NonEmptyList[Rule[F, T]]): RulesEngineIntBuilder[F, T] =
+      new RulesEngineIntBuilder[F, T](rules)
+
+    // pure
+    def withRules[G[X] <: Id[X], T](
+      head1: Rule[G, T],
+      tail: Rule[G, T]*
+    )(implicit env: G[Any] <:< Id[Any]): RulesEngineIntBuilder[F, T] =
+      withRules[T](NonEmptyList.of[Rule[Id, T]](head1, tail*).covaryAll[F])
+
+    def withRules[G[X] <: Id[X], T](rules: NonEmptyList[PureRule[T]])(implicit
+      env: G[Any] <:< Id[Any]
+    ): RulesEngineIntBuilder[F, T] =
+      withRules[T](rules.covaryAll[F])
+  }
+
+  class RulesEngineIntBuilder[F[_]: MonadThrow, T] private[RulesEngine] (
+    rules: NonEmptyList[Rule[F, T]]
+  ) {
+
+    def withInterpreter(interpreter: RuleResultsInterpreter): F[RulesEngine[F, T]] =
+      Rule.findDuplicated(rules) match {
+        case Nil =>
+          MonadThrow[F].pure(RulesEngine(rules, interpreter))
+        case duplicatedDescriptions =>
+          MonadThrow[F].raiseError(DuplicatedRulesException(duplicatedDescriptions))
+      }
+
+    def allowAllNotDenied: F[RulesEngine[F, T]] =
+      withInterpreter(RuleResultsInterpreter.Defaults.allowAllNotDenied)
+
+    def denyAllNotAllowed: F[RulesEngine[F, T]] =
+      withInterpreter(RuleResultsInterpreter.Defaults.denyAllNotAllowed)
+  }
+
+  case class DuplicatedRulesException(duplicates: List[AnyRule])
       extends RuntimeException(s"Duplicated rules found!\n${duplicates
         .map(_.fullDescription.prepended("- ").mkString)
         .mkString(",")}")
