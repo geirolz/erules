@@ -16,13 +16,13 @@ import erules.core.RuleVerdict._
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] = Rule("Check UK citizenship").apply[Id, Citizenship]{
-    case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
-  }
+val checkCitizenship: Rule[Id, Citizenship] = Rule("Check UK citizenship").apply[Id, Citizenship] {
+  case Citizenship(Country("UK")) => Allow.withoutReasons
+  case _                          => Deny.because("Only UK citizenship is allowed!")
+}
 
 val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age]{
+  Rule("Check Age >= 18").apply[Id, Age] {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _                       => Deny.because("Only >= 18 age are allowed!")
   }
