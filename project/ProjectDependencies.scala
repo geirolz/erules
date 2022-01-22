@@ -1,4 +1,5 @@
 import sbt._
+import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
@@ -12,7 +13,9 @@ object ProjectDependencies {
   }
 
   object Core {
-    lazy val dedicated: Seq[ModuleID] = Nil
+    lazy val dedicated: Seq[ModuleID] = Seq(
+      "org.scala-lang" % "scala-reflect" % "2.13.8"
+    )
   }
 
   object Generic {
