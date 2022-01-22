@@ -107,6 +107,8 @@ lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   crossScalaVersions := List("2.13.8", "3.1.0"),
   scalaVersion := crossScalaVersions.value.head,
   scalacOptions ++= scalacSettings(scalaVersion.value),
+  // test
+  Test / fork := false,
   // dependencies
   resolvers ++= ProjectResolvers.all,
   libraryDependencies ++= ProjectDependencies.common ++ {
