@@ -155,6 +155,9 @@ object Rule extends RuleInstances {
   class RuleBuilder private[erules] (name: String) { $this =>
 
     def apply[F[_], T](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+      check(f)
+
+    def check[F[_], T](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
       RuleImpl(
         f           = f,
         name        = $this.name,
