@@ -16,14 +16,11 @@ object ProjectDependencies {
   }
 
   object Generic {
-    lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scalatest" %% "scalatest" % "3.2.10"
-    )
+    lazy val dedicated: Seq[ModuleID] = Nil
   }
 
   object Scalatest {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scalatest" %% "scalatest" % "3.2.10",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0"
     )
   }

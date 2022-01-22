@@ -1,11 +1,11 @@
 import sbt.project
-import ModuleMdocPlugin.autoImport.mdocScalacOptions
+import ModuleMdocPlugin.autoImport.{mdocLibraryDependencies, mdocScalacOptions}
 
 val prjName = "erules"
 val org     = "com.github.geirolz"
 
 //## global project to no publish ##
-lazy val fly4s: Project = project
+lazy val erules: Project = project
   .in(file("."))
   .settings(
     name := prjName,
@@ -34,7 +34,8 @@ lazy val fly4s: Project = project
 lazy val core: Project =
   buildModule(
     prjModuleName = "core",
-    toPublish     = true
+    toPublish     = true,
+    parentFolder  = "."
   ).settings(
     libraryDependencies ++= ProjectDependencies.Core.dedicated
   )
@@ -42,7 +43,8 @@ lazy val core: Project =
 lazy val generic: Project =
   buildModule(
     prjModuleName = "generic",
-    toPublish     = true
+    toPublish     = true,
+    parentFolder  = "modules"
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Generic.dedicated
@@ -51,28 +53,29 @@ lazy val generic: Project =
 lazy val scalatest: Project =
   buildModule(
     prjModuleName = "scalatest",
-    toPublish     = true
+    toPublish     = true,
+    parentFolder  = "modules"
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Scalatest.dedicated
     )
 
 //=============================== MODULES UTILS ===============================
-def buildModule(prjModuleName: String, toPublish: Boolean, folder: String = "modules"): Project = {
-  val keys       = prjModuleName.split("-")
-  val id         = keys.reduce(_ + _.capitalize)
-  val docName    = keys.mkString(" ")
-  val prjFile    = file(s"$folder/$prjModuleName")
-  val docNameStr = s"$prjName $docName"
+def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String): Project = {
+  val moduleFolder = s"$parentFolder/$prjModuleName"
+  val keys         = prjModuleName.split("-")
+  val id           = keys.reduce(_ + _.capitalize)
+  val docName      = keys.mkString(" ")
+  val docNameStr   = s"$prjName $docName"
 
-  Project(id, prjFile)
+  Project(id, file(moduleFolder))
     .settings(
       description := moduleName.value,
       moduleName := s"$prjName-$prjModuleName",
       name := s"$prjName $docName",
       publish / skip := !toPublish,
-      mdocIn := file(s"$folder/docs"),
-      mdocOut := file(folder),
+      mdocIn := file(s"$moduleFolder/docs"),
+      mdocOut := file(moduleFolder),
       mdocScalacOptions := Seq("-Xsource:3"),
       mdocVariables := Map(
         "ORG"         -> org,

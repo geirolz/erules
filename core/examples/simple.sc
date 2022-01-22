@@ -14,20 +14,20 @@ case class Person(
 import erules.core.Rule
 import erules.core.RuleVerdict._
 import cats.data.NonEmptyList
+import cats.Id
 
-val checkCitizenship: Rule[Citizenship] =
-  Rule("Check UK citizenship").check {
+val checkCitizenship: Rule[Id, Citizenship] = Rule("Check UK citizenship").apply[Id, Citizenship]{
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
 
-val checkAdultAge: Rule[Age] =
-  Rule("Check Age >= 18").check {
+val checkAdultAge: Rule[Id, Age] =
+  Rule("Check Age >= 18").apply[Id, Age]{
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
-val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -44,8 +44,10 @@ import cats.effect.unsafe.implicits._
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
 val result = for {
-  engine <- RulesEngine.denyAllNotAllowed[IO, Person](allPersonRules)
-  result <- engine.parEval[IO](person)
+  engine <- RulesEngine[IO]
+    .withRules[Id, Person](allPersonRules)
+    .denyAllNotAllowed
+  result <- engine.parEval(person)
 } yield result
 
 result.unsafeRunSync()
@@ -67,19 +69,19 @@ import erules.core.Rule
 import erules.core.RuleVerdict._
 import cats.data.NonEmptyList
 
-val checkCitizenship: Rule[Citizenship] =
-  Rule("Check UK citizenship").check {
+val checkCitizenship: Rule[Id, Citizenship] =
+  Rule("Check UK citizenship")[Id, Citizenship] {
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
 
-val checkAdultAge: Rule[Age] =
-  Rule("Check Age >= 18").check {
+val checkAdultAge: Rule[Id, Age] =
+  Rule("Check Age >= 18")[Id, Age] {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
-val allPersonRules: NonEmptyList[Rule[Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("person.citizenship")
     .contramap(_.citizenship),
@@ -97,8 +99,8 @@ import erules.implicits._
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
 val result = for {
-  engine <- RulesEngine.denyAllNotAllowed[IO, Person](allPersonRules)
-  result <- engine.parEval[IO](person)
+  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
+  result <- engine.parEval(person)
 } yield result
 
 Console.println(result.unsafeRunSync().asReport)
