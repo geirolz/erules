@@ -31,7 +31,7 @@ jobs:
         include:
           - scala: 2.13.8
             name: Scala2
-            test-tasks: coverage test coverageReport
+            test-tasks: test #coverage suspended due a bug
           - scala: 3.1.0
             name: Scala3
             test-tasks: test # scoverage doesn’t support Scala 3
