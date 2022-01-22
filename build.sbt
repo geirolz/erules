@@ -7,10 +7,14 @@ val org     = "com.github.geirolz"
 //## global project to no publish ##
 lazy val erules: Project = project
   .in(file("."))
+  .settings(allSettings: _*)
+  .settings(noPublishSettings: _*)
   .settings(
     name := prjName,
     description := "A rules engine evaluator",
-    organization := org,
+    organization := org
+  )
+  .settings(
     inThisBuild(
       List(
         organization := org,
@@ -25,9 +29,7 @@ lazy val erules: Project = project
           )
         )
       )
-    ),
-    allSettings,
-    noPublishSettings
+    ): _*
   )
   .aggregate(core, generic, scalatest)
 
@@ -37,6 +39,7 @@ lazy val core: Project =
     toPublish     = true,
     parentFolder  = "."
   ).settings(
+    mdocOut := file("."),
     libraryDependencies ++= ProjectDependencies.Core.dedicated
   )
 
@@ -69,6 +72,7 @@ def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String)
   val docNameStr   = s"$prjName $docName"
 
   Project(id, file(moduleFolder))
+    .settings(allSettings: _*)
     .settings(
       description := moduleName.value,
       moduleName := s"$prjName-$prjModuleName",
@@ -83,8 +87,7 @@ def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String)
         "DOCS_TITLE"  -> docNameStr.split(" ").map(_.capitalize).mkString(" "),
         "MODULE_NAME" -> moduleName.value,
         "VERSION"     -> previousStableVersion.value.getOrElse("<version>")
-      ),
-      allSettings
+      )
     )
     .enablePlugins(ModuleMdocPlugin)
 }

@@ -1,4 +1,4 @@
-# erules
+# Erules
 [![Build Status](https://github.com/geirolz/erules/actions/workflows/cicd.yml/badge.svg)](https://github.com/geirolz/erules/actions)
 [![codecov](https://img.shields.io/codecov/c/github/geirolz/erules)](https://codecov.io/gh/geirolz/erules)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db3274b55e0c4031803afb45f58d4413)](https://www.codacy.com/manual/david.geirola/erules?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=geirolz/erules&amp;utm_campaign=Badge_Grade)
@@ -105,3 +105,8 @@ val result: IO[EngineResult[Person]]  = for {
 //yolo
 result.unsafeRunSync().asReport[String]
 ```
+
+
+### Modules
+- [erules-generic](https://github.com/geirolz/erules/tree/main/modules/generic/src)
+- [erules-scalatest](https://github.com/geirolz/erules/tree/main/modules/scalatest)

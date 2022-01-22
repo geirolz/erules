@@ -1,4 +1,4 @@
-# erules
+# Erules
 [![Build Status](https://github.com/geirolz/erules/actions/workflows/cicd.yml/badge.svg)](https://github.com/geirolz/erules/actions)
 [![codecov](https://img.shields.io/codecov/c/github/geirolz/erules)](https://codecov.io/gh/geirolz/erules)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db3274b55e0c4031803afb45f58d4413)](https://www.codacy.com/manual/david.geirola/erules?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=geirolz/erules&amp;utm_campaign=Badge_Grade)
@@ -79,7 +79,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$8928/1452496109@5598a453,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$8928/1452496109@7b92fff2,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$9429/1960776015@3a3cf9e9,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$9429/1960776015@4ae2e1ed,Check Age >= 18,None,Some(age)))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -119,7 +119,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 329730 nanoseconds
+// - Execution time: 317352 nanoseconds
 // 
 // - Verdict: Success(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +128,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 23133 nanoseconds
+// - Execution time: 24150 nanoseconds
 // 
 // - Verdict: Success(Deny)
 // - Because: Only >= 18 age are allowed!
@@ -137,3 +137,8 @@ result.unsafeRunSync().asReport[String]
 // 
 // ############################################################
 ```
+
+
+### Modules
+- [erules-generic](https://github.com/geirolz/erules/tree/main/modules/generic/src)
+- [erules-scalatest](https://github.com/geirolz/erules/tree/main/modules/scalatest)
