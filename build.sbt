@@ -7,6 +7,13 @@ val org     = "com.github.geirolz"
 //## global project to no publish ##
 lazy val erules: Project = project
   .in(file("."))
+  .settings(allSettings)
+  .settings(noPublishSettings)
+  .settings(
+    name := prjName,
+    description := "A rules engine evaluator",
+    organization := org
+  )
   .settings(
     inThisBuild(
       List(
@@ -23,13 +30,6 @@ lazy val erules: Project = project
         )
       )
     )
-  )
-  .settings(allSettings)
-  .settings(noPublishSettings)
-  .settings(
-    name := prjName,
-    description := "A rules engine evaluator",
-    organization := org
   )
   .aggregate(core, generic, scalatest)
 
@@ -72,7 +72,7 @@ def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String)
   val docNameStr   = s"$prjName $docName"
 
   Project(id, file(moduleFolder))
-    .settings(allSettings: _*)
+    .settings(allSettings)
     .settings(
       description := moduleName.value,
       moduleName := s"$prjName-$prjModuleName",
@@ -87,8 +87,7 @@ def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String)
         "DOCS_TITLE"  -> docNameStr.split(" ").map(_.capitalize).mkString(" "),
         "MODULE_NAME" -> moduleName.value,
         "VERSION"     -> previousStableVersion.value.getOrElse("<version>")
-      ),
-      allSettings
+      )
     )
     .enablePlugins(ModuleMdocPlugin)
 }
@@ -108,6 +107,8 @@ lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   crossScalaVersions := List("2.13.8", "3.1.0"),
   scalaVersion := crossScalaVersions.value.head,
   scalacOptions ++= scalacSettings(scalaVersion.value),
+  // test
+  Test / fork := false,
   // dependencies
   resolvers ++= ProjectResolvers.all,
   libraryDependencies ++= ProjectDependencies.common ++ {
