@@ -32,7 +32,7 @@ jobs:
           - scala: 2.13.8
             name: Scala2
             test-tasks: test #coverage suspended due a bug
-          - scala: 3.1.0
+          - scala: 3.1.1
             name: Scala3
             test-tasks: test # scoverage doesn’t support Scala 3
 
