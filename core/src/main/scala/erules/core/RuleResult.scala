@@ -64,8 +64,8 @@ private[erules] trait RuleResultInstances {
           |- Description: ${er.rule.description.getOrElse("")}
           |- Target: ${er.rule.targetInfo.getOrElse("")}
           |- Execution time: ${er.executionTime
-        .map(Show.catsShowForFiniteDuration.show)
-        .getOrElse("*not measured*")}
+           .map(Show.catsShowForFiniteDuration.show)
+           .getOrElse("*not measured*")}
           |
           |- Verdict: ${er.verdict.map(_.typeName)}
           |$reasons""".stripMargin

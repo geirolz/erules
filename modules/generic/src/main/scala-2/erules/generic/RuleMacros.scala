@@ -74,10 +74,10 @@ private object RuleImplMacros {
     }
 
     c.Expr[String](q"${pathEls
-      .collect {
-        case TermPathElement(c)                => c.decodedName.toString
-        case FunctorPathElement(_, method, _*) => method.decodedName.toString
-      }
-      .mkString(".")}")
+        .collect {
+          case TermPathElement(c)                => c.decodedName.toString
+          case FunctorPathElement(_, method, _*) => method.decodedName.toString
+        }
+        .mkString(".")}")
   }
 }
