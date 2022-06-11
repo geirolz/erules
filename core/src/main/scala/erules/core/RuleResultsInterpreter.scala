@@ -10,8 +10,8 @@ trait RuleResultsInterpreter {
 }
 object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
   object Defaults {
-    val allowAllNotDenied: RuleResultsInterpreter = new AllowAllNotDeniedRuleResultsInterpreter()
-    val denyAllNotAllowed: RuleResultsInterpreter = new DenyAllNotAllowedRuleResultsInterpreter()
+    val allowAllNotDenied: RuleResultsInterpreter = new AllowAllNotDeniedRuleResultsInterpreter
+    val denyAllNotAllowed: RuleResultsInterpreter = new DenyAllNotAllowedRuleResultsInterpreter
   }
 }
 

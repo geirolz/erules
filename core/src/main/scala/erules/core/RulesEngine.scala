@@ -78,7 +78,7 @@ object RulesEngine {
   def apply[F[_]: MonadThrow]: RulesEngineRulesBuilder[F] =
     new RulesEngineRulesBuilder[F]
 
-  class RulesEngineRulesBuilder[F[_]: MonadThrow] private[RulesEngine] () {
+  class RulesEngineRulesBuilder[F[_]: MonadThrow] private[RulesEngine] {
 
     // effect
     def withRules[T](
