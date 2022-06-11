@@ -4,7 +4,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/db3274b55e0c4031803afb45f58d4413)](https://www.codacy.com/manual/david.geirola/erules?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=geirolz/erules&amp;utm_campaign=Badge_Grade)
 [![Sonatype Nexus (Releases)](https://img.shields.io/nexus/r/com.github.geirolz/erules-core_2.13?server=https%3A%2F%2Foss.sonatype.org)](https://mvnrepository.com/artifact/com.github.geirolz/erules-core)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
-[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/geirolz/erules&style=flat)](https://mergify.io)
+[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/geirolz/erules&style=flat)](https://mergify.io)
 [![GitHub license](https://img.shields.io/github/license/geirolz/erules)](https://github.com/geirolz/erules/blob/main/LICENSE)
 
 
@@ -79,7 +79,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$9429/1960776015@3a3cf9e9,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$9429/1960776015@4ae2e1ed,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$13639/0x0000000803515040@67d92594,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$13639/0x0000000803515040@38c7f34f,Check Age >= 18,None,Some(age)))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -119,7 +119,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 317352 nanoseconds
+// - Execution time: 144042 nanoseconds
 // 
 // - Verdict: Success(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +128,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 24150 nanoseconds
+// - Execution time: 7917 nanoseconds
 // 
 // - Verdict: Success(Deny)
 // - Because: Only >= 18 age are allowed!
