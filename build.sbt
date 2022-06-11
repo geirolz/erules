@@ -52,6 +52,9 @@ lazy val generic: Project =
     .settings(
       libraryDependencies ++= ProjectDependencies.Generic.dedicated
     )
+    .settings(
+      scalacOptions ++= macroSettings(scalaVersion.value)
+    )
 
 lazy val scalatest: Project =
   buildModule(
@@ -130,7 +133,6 @@ def scalacSettings(scalaVersion: String): Seq[String] =
     "utf-8", // Specify character encoding used by source files.
     "-feature", // Emit warning and location for usages of features that should be imported explicitly.
     "-language:existentials", // Existential types (besides wildcard types) can be written and inferred
-    "-language:experimental.macros", // Allow macro definition (besides implementation and application)
     "-language:higherKinds", // Allow higher-kinded types
     "-language:implicitConversions" // Allow definition of implicit functions called views
   ) ++ {
@@ -174,12 +176,25 @@ def scalacSettings(scalaVersion: String): Seq[String] =
           "-Ywarn-unused:explicits", // Warn if a explicit value parameter is unused.
           "-Ywarn-unused:patvars", // Warn if a variable bound in a pattern is unused.
           "-Ywarn-unused:privates", // Warn if a private member is unused.
-          "-Ywarn-macros:after", // Tells the compiler to make the unused checks after macro expansion
           "-Xsource:3",
           "-P:kind-projector:underscore-placeholders"
         )
       case _ => Nil
     }
+  }
+
+def macroSettings(scalaVersion: String): Seq[String] =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((3, _)) =>
+      Seq(
+        "-Xcheck-macros" // Fail the compilation if there are any warnings.
+      )
+    case Some((2, 13)) =>
+      Seq(
+        "-language:experimental.macros", // Allow macro definition (besides implementation and application)
+        "-Ywarn-macros:after" // Tells the compiler to make the unused checks after macro expansion
+      )
+    case _ => Nil
   }
 
 //=============================== ALIASES ===============================
