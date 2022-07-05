@@ -107,7 +107,7 @@ lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
 
 lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   // scala
-  crossScalaVersions := List("2.13.8", "3.1.2"),
+  crossScalaVersions := List("2.13.8", "3.1.3"),
   scalaVersion := crossScalaVersions.value.head,
   scalacOptions ++= scalacSettings(scalaVersion.value),
   // test
@@ -116,9 +116,9 @@ lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   resolvers ++= ProjectResolvers.all,
   libraryDependencies ++= ProjectDependencies.common ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 13)) => ProjectDependencies.Plugins.compilerPluginsFor2_13
-      case Some((3, _))  => ProjectDependencies.Plugins.compilerPluginsFor3
-      case _             => Nil
+      case Some(2, 13) => ProjectDependencies.Plugins.compilerPluginsFor2_13
+      case Some(3, _)  => ProjectDependencies.Plugins.compilerPluginsFor3
+      case _           => Nil
     }
   },
   // fmt
@@ -137,13 +137,13 @@ def scalacSettings(scalaVersion: String): Seq[String] =
     "-language:implicitConversions" // Allow definition of implicit functions called views
   ) ++ {
     CrossVersion.partialVersion(scalaVersion) match {
-      case Some((3, _)) =>
+      case Some(3, _) =>
         Seq(
           "-Ykind-projector",
           "-explain-types", // Explain type errors in more detail.
           "-Xfatal-warnings" // Fail the compilation if there are any warnings.
         )
-      case Some((2, 13)) =>
+      case Some(2, 13) =>
         Seq(
           "-explaintypes", // Explain type errors in more detail.
           "-unchecked", // Enable additional warnings where generated code depends on assumptions.
@@ -185,11 +185,11 @@ def scalacSettings(scalaVersion: String): Seq[String] =
 
 def macroSettings(scalaVersion: String): Seq[String] =
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((3, _)) =>
+    case Some(3, _) =>
       Seq(
         "-Xcheck-macros" // Fail the compilation if there are any warnings.
       )
-    case Some((2, 13)) =>
+    case Some(2, 13) =>
       Seq(
         "-language:experimental.macros", // Allow macro definition (besides implementation and application)
         "-Ywarn-macros:after" // Tells the compiler to make the unused checks after macro expansion
