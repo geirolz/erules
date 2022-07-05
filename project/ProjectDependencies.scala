@@ -38,7 +38,7 @@ object ProjectDependencies {
     Seq(
       "org.typelevel" %% "cats-core" % "2.7.0",
       "org.typelevel" %% "cats-effect" % "3.3.12",
-      "org.typelevel" %% "log4cats-slf4j" % "2.3.1",
+      "org.typelevel" %% "log4cats-slf4j" % "2.3.2",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test
     )
 
