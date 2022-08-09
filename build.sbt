@@ -31,7 +31,7 @@ lazy val erules: Project = project
       )
     )
   )
-  .aggregate(core, generic, scalatest)
+  .aggregate(core, generic, circe, scalatest)
 
 lazy val core: Project =
   buildModule(

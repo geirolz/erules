@@ -7,10 +7,9 @@ import cats.Id
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
 import erules.core.RulesEngine.DuplicatedRulesException
 import erules.core.RuleVerdict.{Allow, Deny}
-import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
+import erules.core.testings.ErulesAsyncAssertingSyntax
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.TryValues
 
 import scala.util.{Right, Try}
 
@@ -18,9 +17,7 @@ class RulesEngineSpec
     extends AsyncWordSpec
     with AsyncIOSpec
     with Matchers
-    with TryValues
-    with ErulesAsyncAssertingSyntax
-    with ReportValues {
+    with ErulesAsyncAssertingSyntax {
 
   "RulesEngine" should {
     "Return a DuplicatedRulesException with duplicated rules" in {

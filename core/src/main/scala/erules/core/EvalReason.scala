@@ -8,7 +8,7 @@ import cats.Show
   *   reason message
   */
 case class EvalReason(message: String) extends AnyVal
-object EvalReason extends EvalReasonInstances {
+object EvalReason extends EvalReasonInstances with EvalReasonSyntax {
 
   def stringifyList(reasons: List[EvalReason]): String =
     reasons match {
@@ -20,4 +20,10 @@ object EvalReason extends EvalReasonInstances {
 
 private[erules] trait EvalReasonInstances {
   implicit val showInstanceForEvalReason: Show[EvalReason] = _.message
+}
+
+private[erules] trait EvalReasonSyntax {
+  implicit class EvalResultReasonStringOps(private val ctx: StringContext) {
+    def er(args: Any*): EvalReason = EvalReason(ctx.s(args))
+  }
 }

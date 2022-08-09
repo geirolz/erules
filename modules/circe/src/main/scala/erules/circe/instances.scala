@@ -1,9 +1,15 @@
 package erules.circe
 
+import erules.circe.report.{JsonReportInstances, JsonReportSyntax}
 import erules.core.*
 
-object instances extends ErulesTypesCirceInstances
-private[erules] trait ErulesTypesCirceInstances {
+object implicits extends CirceAllInstances with CirceAllSyntax
+
+//---------- INSTANCES ----------
+object instances extends CirceAllInstances
+private[circe] trait CirceAllInstances extends BasicTypesCirceInstances with JsonReportInstances
+
+private[circe] trait BasicTypesCirceInstances {
 
   import erules.circe.GenericCirceInstances.*
   import io.circe.*
@@ -44,3 +50,7 @@ private[erules] trait ErulesTypesCirceInstances {
   implicit final val evalReasonCirceEncoder: Encoder[EvalReason] =
     io.circe.generic.semiauto.deriveEncoder[EvalReason]
 }
+
+//---------- SYNTAX ----------
+object syntax extends CirceAllSyntax
+private[circe] trait CirceAllSyntax extends JsonReportSyntax

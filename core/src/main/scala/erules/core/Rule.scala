@@ -4,6 +4,7 @@ import cats.{Applicative, ApplicativeThrow, Contravariant, Eq, Functor, Order, S
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
+import erules.core.Rule.RuleBuilder
 import erules.core.RuleVerdict.Ignore
 
 import scala.util.Try
@@ -145,7 +146,7 @@ sealed trait Rule[+F[_], -T] extends Serializable {
       .getOrElse(false)
 }
 
-object Rule extends RuleInstances {
+object Rule extends RuleInstances with RuleSyntax {
 
   import erules.core.utils.CollectionsUtils.*
 
@@ -236,5 +237,11 @@ private[erules] trait RuleInstances {
 
   implicit class PureRuleOps[F[_]: Functor, T](fa: F[PureRule[T]]) {
     def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
+  }
+}
+
+private[erules] trait RuleSyntax {
+  implicit class RuleBuilderStringOps(private val ctx: StringContext) {
+    def r(args: Any*): RuleBuilder = new RuleBuilder(ctx.s(args))
   }
 }

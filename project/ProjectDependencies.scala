@@ -3,6 +3,10 @@ import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
+  private val circeVersion      = "0.14.2"
+  private val catsVersion       = "2.8.0"
+  private val catsEffectVersion = "3.3.14"
+
   object Plugins {
     val compilerPluginsFor2_13: Seq[ModuleID] = Seq(
       compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full),
@@ -24,8 +28,11 @@ object ProjectDependencies {
 
   object Circe {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "io.circe" %% "circe-core" % "0.14.2",
-      "io.circe" %% "circe-generic" % "0.14.2"
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      // test
+      "io.circe" %% "circe-parser" % circeVersion,
+      "io.circe" %% "circe-literal" % circeVersion
     )
   }
 
@@ -43,20 +50,15 @@ object ProjectDependencies {
 
   // -------------------------------------------------------//
   lazy val common: Seq[ModuleID] = Seq(
-    effects,
-    tests
-  ).flatten
-
-  private val effects: Seq[ModuleID] =
-    Seq(
-      "org.typelevel" %% "cats-core" % "2.8.0",
-      "org.typelevel" %% "cats-effect" % "3.3.14",
-      "org.typelevel" %% "log4cats-slf4j" % "2.4.0",
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test
-    )
-
-  private val tests: Seq[ModuleID] = Seq(
+    "org.typelevel" %% "cats-core" % catsVersion,
+    "org.typelevel" %% "cats-effect" % catsEffectVersion,
+    "org.typelevel" %% "log4cats-slf4j" % "2.4.0",
+    // test
+    "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test,
     "org.scalactic" %% "scalactic" % "3.2.13" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.13" % Test
+    "org.scalatest" %% "scalatest" % "3.2.13" % Test,
+    "org.scalameta" %% "munit" % "0.7.29" % Test,
+    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
   )
+
 }

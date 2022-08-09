@@ -1,11 +1,11 @@
 package erules.circe.report
 
 import erules.core.*
-import io.circe.Encoder
+import io.circe.{Encoder, Json}
 
-object JsonReport extends JsonReportInstances {
+object JsonReport extends JsonReportInstances with JsonReportSyntax {
   def fromEncoder[T: Encoder]: JsonReportEncoder[T] =
-    (t: T) => Encoder[T].apply(t)
+    (t: T) => Encoder[T].apply(t).deepDropNullValues
 }
 private[circe] trait JsonReportInstances {
 
@@ -25,4 +25,10 @@ private[circe] trait JsonReportInstances {
   implicit val ruleVerdictJsonReportEncoder: JsonReportEncoder[RuleVerdict] =
     JsonReport.fromEncoder[RuleVerdict]
 
+}
+
+private[circe] trait JsonReportSyntax {
+  implicit class JsonReportEncoderForAny[T](t: T) {
+    def asJsonReport(implicit re: JsonReportEncoder[T]): Json = re.report(t)
+  }
 }

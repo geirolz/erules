@@ -4,7 +4,7 @@ import cats.Show
 import erules.core.*
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
-object StringReportEncoder extends StringReportInstances {
+object StringReportEncoder extends StringReportInstances with StringReportSyntax {
   val defaultHeaderMaxLen: Int       = 60
   val defaultSeparatorSymbol: String = "-"
 
@@ -98,4 +98,10 @@ private[erules] trait StringReportInstances {
           |- Verdict: ${er.verdict.map(_.typeName)}
           |$reasons""".stripMargin
     }
+}
+
+private[erules] trait StringReportSyntax {
+  implicit class StringReportEncoderForAny[T](t: T) {
+    def asStringReport(implicit re: StringReportEncoder[T]): String = re.report(t)
+  }
 }
