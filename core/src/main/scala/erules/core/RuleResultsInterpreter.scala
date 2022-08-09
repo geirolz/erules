@@ -3,8 +3,6 @@ package erules.core
 import cats.data.NonEmptyList
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 
-import scala.util.{Failure, Success}
-
 trait RuleResultsInterpreter {
   def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T]
 }
@@ -50,13 +48,13 @@ private[erules] trait EvalResultsInterpreterInstances {
 
     report.toList
       .flatMap {
-        case _ @RuleResult(_: Rule[?, T], Success(_: Ignore), _) =>
+        case _ @RuleResult(_: Rule[?, T], Right(_: Ignore), _) =>
           None
-        case _ @RuleResult(r: Rule[?, T], Failure(ex), _) =>
+        case _ @RuleResult(r: Rule[?, T], Left(ex), _) =>
           Some(Left(RuleResult.denyForSafetyInCaseOfError(r.asInstanceOf[Rule[Nothing, T]], ex)))
-        case re @ RuleResult(_: Rule[?, T], Success(_: Deny), _) =>
+        case re @ RuleResult(_: Rule[?, T], Right(_: Deny), _) =>
           Some(Left(re.asInstanceOf[Res[Deny]]))
-        case re @ RuleResult(_: Rule[?, T], Success(_: Allow), _) =>
+        case re @ RuleResult(_: Rule[?, T], Right(_: Allow), _) =>
           Some(Right(re.asInstanceOf[Res[Allow]]))
       }
       .partitionMap[Res[Deny], Res[Allow]](identity) match {

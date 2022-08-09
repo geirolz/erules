@@ -1,8 +1,6 @@
 package erules.core
 
-import cats.Show
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.report.StringReport
 
 /** Describes the engine output.
   *
@@ -41,18 +39,4 @@ object EngineResult extends EngineResultInstances {
     (er1 +: erN).toList.reduce((a, b) => combine(data, a, b))
 }
 
-private[erules] trait EngineResultInstances {
-
-  implicit def catsShowInstanceForEngineResult[T](implicit
-    showT: Show[T] = Show.fromToString[T],
-    showERIR: Show[RuleResultsInterpreterVerdict[T]]
-  ): Show[EngineResult[T]] =
-    er =>
-      StringReport.paragraph("ENGINE VERDICT", "#")(
-        s"""
-           |Data: ${showT.show(er.data)}
-           |Rules: ${er.verdict.evaluatedRules.size}
-           |${showERIR.show(er.verdict)}
-           |""".stripMargin
-      )
-}
+private[erules] trait EngineResultInstances

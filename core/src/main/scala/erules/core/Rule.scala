@@ -4,6 +4,7 @@ import cats.{Applicative, ApplicativeThrow, Contravariant, Eq, Functor, Order, S
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
+import erules.core.Rule.RuleBuilder
 import erules.core.RuleVerdict.Ignore
 
 import scala.util.Try
@@ -122,8 +123,8 @@ sealed trait Rule[+F[_], -T] extends Serializable {
     */
   def evalRaw[FF[X] >: F[X], TT <: T](data: TT): FF[RuleVerdict]
 
-  /** Eval this rules. The evaluations result is stored into a 'Try', so the `ApplicativeError`
-    * doesn't raise error in case of failed rule evaluation
+  /** Eval this rules. The evaluations result is stored into a 'Either[Throwable, T]', so the
+    * `ApplicativeError` doesn't raise error in case of failed rule evaluation
     */
   final def eval[FF[X] >: F[X], TT <: T](
     data: TT
@@ -132,8 +133,8 @@ sealed trait Rule[+F[_], -T] extends Serializable {
       evalRaw[FF, TT](data).attempt
     ).map { case (duration, res) =>
       RuleResult[TT, RuleVerdict](
-        rule = this,
-        res.toTry,
+        rule          = this,
+        verdict       = res,
         executionTime = Some(duration)
       )
     }
@@ -145,7 +146,7 @@ sealed trait Rule[+F[_], -T] extends Serializable {
       .getOrElse(false)
 }
 
-object Rule extends RuleInstances {
+object Rule extends RuleInstances with RuleSyntax {
 
   import erules.core.utils.CollectionsUtils.*
 
@@ -179,7 +180,7 @@ object Rule extends RuleInstances {
       apply(_ => Applicative[F].pure(v))
   }
 
-  private case class RuleImpl[+F[_], -TT](
+  private[erules] case class RuleImpl[+F[_], -TT](
     f: TT => F[RuleVerdict],
     name: String,
     description: Option[String] = None,
@@ -235,6 +236,12 @@ private[erules] trait RuleInstances {
     r => s"Rule('${r.fullDescription}')"
 
   implicit class PureRuleOps[F[_]: Functor, T](fa: F[PureRule[T]]) {
-    def covaryAll[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
+    def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
+  }
+}
+
+private[erules] trait RuleSyntax {
+  implicit class RuleBuilderStringOps(private val ctx: StringContext) {
+    def r(args: Any*): RuleBuilder = new RuleBuilder(ctx.s(args))
   }
 }

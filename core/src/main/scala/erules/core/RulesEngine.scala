@@ -7,7 +7,6 @@ import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import scala.annotation.unused
-import scala.util.{Failure, Success}
 
 case class RulesEngine[F[_], T] private (
   rules: NonEmptyList[Rule[F, T]],
@@ -64,8 +63,8 @@ case class RulesEngine[F[_], T] private (
     rule
       .eval(data)
       .flatTap {
-        case RuleResult(_, Success(_), _) => F.unit
-        case RuleResult(rule, Failure(ex), _) =>
+        case RuleResult(_, Right(_), _) => F.unit
+        case RuleResult(rule, Left(ex), _) =>
           logger match {
             case Some(l) => l.info(ex)(s"$rule failed!")
             case None    => F.unit
@@ -95,12 +94,12 @@ object RulesEngine {
       head1: Rule[G, T],
       tail: Rule[G, T]*
     )(implicit env: G[Any] <:< Id[Any]): RulesEngineIntBuilder[F, T] =
-      withRules[T](NonEmptyList.of[Rule[Id, T]](head1, tail*).covaryAll[F])
+      withRules[T](NonEmptyList.of[Rule[Id, T]](head1, tail*).mapLift[F])
 
     def withRules[G[X] <: Id[X], T](rules: NonEmptyList[PureRule[T]])(implicit
       env: G[Any] <:< Id[Any]
     ): RulesEngineIntBuilder[F, T] =
-      withRules[T](rules.covaryAll[F])
+      withRules[T](rules.mapLift[F])
   }
 
   class RulesEngineIntBuilder[F[_]: MonadThrow, T] private[RulesEngine] (

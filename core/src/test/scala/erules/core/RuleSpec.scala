@@ -7,17 +7,16 @@ import cats.Id
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
 import org.scalatest.wordspec.AsyncWordSpec
-import org.scalatest.TryValues
+import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 
 import scala.annotation.unused
-import scala.util.{Failure, Success}
 
 class RuleSpec
     extends AsyncWordSpec
     with AsyncIOSpec
     with Matchers
-    with TryValues
+    with EitherValues
     with ErulesAsyncAssertingSyntax
     with ReportValues {
 
@@ -62,10 +61,10 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Allow.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Deny.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
       } yield ()
     }
 
@@ -87,10 +86,10 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Failure(ex)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Deny.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
       } yield ()
     }
   }
@@ -107,10 +106,10 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Allow.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
         _ <- rule
           .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Deny.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
       } yield ()
     }
 
@@ -126,10 +125,10 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Failure(ex)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
         _ <- rule
           .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Deny.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
       } yield ()
     }
   }
@@ -149,11 +148,11 @@ class RuleSpec
         _ <- rule
           .covary[IO]
           .eval(Foo())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Allow.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
         _ <- rule
           .covary[IO]
           .eval(Bar())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Deny.withoutReasons)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
       } yield ()
     }
   }
@@ -169,7 +168,7 @@ class RuleSpec
       rule
         .covary[IO]
         .eval(Foo("TEST", 0))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Allow.withoutReasons)))
+        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
     }
 
     "return the Ignore once evaluated out of the defined domain" in {
@@ -182,7 +181,7 @@ class RuleSpec
       rule
         .covary[IO]
         .eval(Foo("TEST", 1))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Success(Ignore.noMatch)))
+        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Ignore.noMatch)))
     }
   }
 

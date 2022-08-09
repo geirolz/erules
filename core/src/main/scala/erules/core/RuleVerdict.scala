@@ -15,19 +15,19 @@ sealed trait RuleVerdict extends Serializable { this: RuleVerdictBecauseSupport[
 
   /** Returns `true` if this is an instance of `Allow`
     */
-  val isAllow: Boolean = this.isInstanceOf[Allow]
+  final val isAllow: Boolean = this.isInstanceOf[Allow]
 
   /** Returns `true` if this is an instance of `Deny`
     */
-  val isDeny: Boolean = this.isInstanceOf[Deny]
+  final val isDeny: Boolean = this.isInstanceOf[Deny]
 
   /** Returns `true` if this is an instance of `Ignore`
     */
-  val isIgnore: Boolean = this.isInstanceOf[Ignore]
+  final val isIgnore: Boolean = this.isInstanceOf[Ignore]
 
   /** String that represent just the kind
     */
-  val typeName: String = this match {
+  final val typeName: String = this match {
     case _: RuleVerdict.Allow  => "Allow"
     case _: RuleVerdict.Deny   => "Deny"
     case _: RuleVerdict.Ignore => "Ignore"
