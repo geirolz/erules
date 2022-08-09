@@ -24,8 +24,8 @@ object ProjectDependencies {
 
   object Circe {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "io.circe" %% "circe-core" % "0.14.1",
-      "io.circe" %% "circe-generic" % "0.14.1"
+      "io.circe" %% "circe-core" % "0.14.2",
+      "io.circe" %% "circe-generic" % "0.14.2"
     )
   }
 
