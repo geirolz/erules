@@ -56,6 +56,16 @@ lazy val generic: Project =
       scalacOptions ++= macroSettings(scalaVersion.value)
     )
 
+lazy val circe: Project =
+  buildModule(
+    prjModuleName = "circe",
+    toPublish     = true,
+    parentFolder  = "modules"
+  ).dependsOn(core)
+    .settings(
+      libraryDependencies ++= ProjectDependencies.Circe.dedicated
+    )
+
 lazy val scalatest: Project =
   buildModule(
     prjModuleName = "scalatest",

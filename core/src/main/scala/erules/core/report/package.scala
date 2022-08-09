@@ -1,5 +1,5 @@
 package erules.core
 
 package object report {
-  type StringReport[T] = ReportEncoder[T, String]
+  type StringReportEncoder[T] = ReportEncoder[T, String]
 }

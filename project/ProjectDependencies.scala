@@ -22,6 +22,19 @@ object ProjectDependencies {
     lazy val dedicated: Seq[ModuleID] = Nil
   }
 
+  object Circe {
+    lazy val dedicated: Seq[ModuleID] = Seq(
+      "io.circe" %% "circe-core" % "0.14.1",
+      "io.circe" %% "circe-generic" % "0.14.1"
+    )
+  }
+
+  object Xml {
+    lazy val dedicated: Seq[ModuleID] = Seq(
+      "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
+    )
+  }
+
   object Scalatest {
     lazy val dedicated: Seq[ModuleID] = Seq(
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0"

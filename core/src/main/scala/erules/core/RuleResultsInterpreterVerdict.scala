@@ -1,9 +1,7 @@
 package erules.core
 
 import cats.data.NonEmptyList
-import cats.Show
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.report.StringReport
 
 /** ADT to define the possible responses of the engine evaluation.
   */
@@ -38,29 +36,4 @@ object RuleResultsInterpreterVerdict {
 
   case class Denied[T](evaluatedRules: NonEmptyList[RuleResult[T, RuleVerdict.Deny]])
       extends RuleResultsInterpreterVerdict[T]
-
-  implicit def catsShowInstanceForRuleResultsInterpreterVerdict[T](implicit
-    evalRuleShow: Show[RuleResult[T, ? <: RuleVerdict]]
-  ): Show[RuleResultsInterpreterVerdict[T]] =
-    t => {
-
-      val rulesReport: String = t.evaluatedRules
-        .map(er =>
-          StringReport.paragraph(er.rule.fullDescription)(
-            evalRuleShow.show(er)
-          )
-        )
-        .toList
-        .mkString("\n")
-
-      val tpe: String = t match {
-        case Allowed(_) => "Allowed"
-        case Denied(_)  => "Denied"
-      }
-
-      s"""Interpreter verdict: $tpe
-         |
-         |$rulesReport
-         |""".stripMargin
-    }
 }
