@@ -209,3 +209,12 @@ def macroSettings(scalaVersion: String): Seq[String] =
 
 //=============================== ALIASES ===============================
 addCommandAlias("check", ";clean;test")
+addCommandAlias(
+  "generate-docs",
+  List(
+    core,
+    generic,
+    circe,
+    scalatest
+  ).map(prj => s"project ${prj.id}-docs; mdoc").mkString(";") + s";project $prjName;"
+)

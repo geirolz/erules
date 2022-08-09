@@ -4,8 +4,8 @@ and the `JsonReportEncoder` instances to produce a json report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.4"
-  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.4"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.5"
+  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.5"
 ```
 
 ### Usage
@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$8400/0x0000000802349d20@495e880,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$8400/0x0000000802349d20@78151a35,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$8362/0x0000000802349290@705bbf9a,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$8362/0x0000000802349290@1d14745f,Check Age >= 18,None,Some(age)))
 ```
 
 Import 
@@ -117,7 +117,7 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 140042,
+//           "length" : 91167,
 //           "unit" : "NANOSECONDS"
 //         }
 //       },
@@ -136,7 +136,7 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 12500,
+//           "length" : 10750,
 //           "unit" : "NANOSECONDS"
 //         }
 //       }
