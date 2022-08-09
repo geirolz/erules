@@ -4,13 +4,12 @@ import cats.data.NonEmptyList
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.TryValues
+import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 
 import scala.annotation.unused
-import scala.util.{Failure, Try}
 
-class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValues {
+class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherValues {
 
   "EvalResultsInterpreter.Defaults.allowAllNotDenied" should {
 
@@ -73,11 +72,11 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[Try, Foo] = Rule("Allow all").failed[Try, Foo](ex)
+      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed[EitherThrow, Foo](ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(
-          RuleResult(allowAll, Failure(ex))
+          RuleResult(allowAll, Left(ex))
         )
       )
 
@@ -93,7 +92,6 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Denied for all not all explicitly denied values" in {
 
-      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val result = interpreter.interpret(
@@ -111,7 +109,6 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
     "return Allowed for allowed value" in {
 
-      case class Foo(@unused x: String, @unused y: Int)
       val interpreter = RuleResultsInterpreter.Defaults.denyAllNotAllowed
 
       val result = interpreter.interpret(
@@ -153,11 +150,11 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with TryValue
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[Try, Foo] = Rule("Allow all").failed[Try, Foo](ex)
+      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed[EitherThrow, Foo](ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(
-          RuleResult(allowAll, Failure(ex))
+          RuleResult(allowAll, Left(ex))
         )
       )
 

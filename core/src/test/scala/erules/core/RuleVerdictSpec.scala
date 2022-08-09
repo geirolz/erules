@@ -3,9 +3,9 @@ package erules.core
 import cats.kernel.Monoid
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.TryValues
+import org.scalatest.EitherValues
 
-class RuleVerdictSpec extends AnyWordSpec with Matchers with TryValues {
+class RuleVerdictSpec extends AnyWordSpec with Matchers with EitherValues {
 
   import RuleVerdict.*
 

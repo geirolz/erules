@@ -3,13 +3,11 @@ package erules.core
 import cats.data.NonEmptyList
 import cats.Id
 import erules.core.RuleVerdict.{Allow, Deny}
-import org.scalatest.TryValues
+import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.util.Success
-
-class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
+class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
   "EngineResult.combine" should {
 
@@ -31,7 +29,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Allow.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
           )
         )
       )
@@ -40,7 +38,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Allow.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
           )
         )
       )
@@ -49,8 +47,8 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Allow.because("R1"))),
-            RuleResult(rule2, Success(RuleVerdict.Allow.because("R2")))
+            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1"))),
+            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
           )
         )
       )
@@ -74,7 +72,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Allow.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
           )
         )
       )
@@ -83,7 +81,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Deny.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
           )
         )
       )
@@ -92,7 +90,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Deny.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
           )
         )
       )
@@ -116,7 +114,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Deny.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
           )
         )
       )
@@ -125,7 +123,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Allow.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
           )
         )
       )
@@ -134,7 +132,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Deny.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
           )
         )
       )
@@ -158,7 +156,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Deny.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
           )
         )
       )
@@ -167,7 +165,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Deny.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
           )
         )
       )
@@ -176,8 +174,8 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Deny.because("R1"))),
-            RuleResult(rule2, Success(RuleVerdict.Deny.because("R2")))
+            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1"))),
+            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
           )
         )
       )
@@ -209,7 +207,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Allow.because("R1")))
+            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
           )
         )
       )
@@ -218,7 +216,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Success(RuleVerdict.Allow.because("R2")))
+            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
           )
         )
       )
@@ -227,7 +225,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule3, Success(RuleVerdict.Allow.because("R3")))
+            RuleResult(rule3, Right(RuleVerdict.Allow.because("R3")))
           )
         )
       )
@@ -236,9 +234,9 @@ class EngineResultSpec extends AnyWordSpec with Matchers with TryValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Success(RuleVerdict.Allow.because("R1"))),
-            RuleResult(rule2, Success(RuleVerdict.Allow.because("R2"))),
-            RuleResult(rule3, Success(RuleVerdict.Allow.because("R3")))
+            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1"))),
+            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2"))),
+            RuleResult(rule3, Right(RuleVerdict.Allow.because("R3")))
           )
         )
       )
