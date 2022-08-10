@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$8362/0x0000000802349290@705bbf9a,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$8362/0x0000000802349290@1d14745f,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$10486/0x00000008029eb390@1ea18d05,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$10486/0x00000008029eb390@531ca4f4,Check Age >= 18,None,Some(age)))
 ```
 
 Import 
@@ -111,13 +111,11 @@ result.unsafeRunSync().asJsonReport
 //         "verdict" : {
 //           "type" : "Deny",
 //           "reasons" : [
-//             {
-//               "message" : "Only UK citizenship is allowed!"
-//             }
+//             "Only UK citizenship is allowed!"
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 91167,
+//           "length" : 125334,
 //           "unit" : "NANOSECONDS"
 //         }
 //       },
@@ -130,13 +128,11 @@ result.unsafeRunSync().asJsonReport
 //         "verdict" : {
 //           "type" : "Deny",
 //           "reasons" : [
-//             {
-//               "message" : "Only >= 18 age are allowed!"
-//             }
+//             "Only >= 18 age are allowed!"
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 10750,
+//           "length" : 56500,
 //           "unit" : "NANOSECONDS"
 //         }
 //       }

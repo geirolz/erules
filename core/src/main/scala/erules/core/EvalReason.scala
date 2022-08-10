@@ -7,7 +7,7 @@ import cats.Show
   * @param message
   *   reason message
   */
-case class EvalReason(message: String)
+case class EvalReason(message: String) extends AnyVal
 object EvalReason extends EvalReasonInstances with EvalReasonSyntax {
 
   def stringifyList(reasons: List[EvalReason]): String =

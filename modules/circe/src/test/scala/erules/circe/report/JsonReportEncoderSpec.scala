@@ -16,7 +16,7 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
     case class Foo(x: String, y: Int)
 
     val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
-      Allow.withoutReasons
+      Allow.because("reason")
     }
 
     val engine: IO[RulesEngineIO[Foo]] =
@@ -33,27 +33,28 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
       obtained = result,
       returns = json"""
           {
-            "data" : {
-              "x" : "TEST",
-              "y" : 0
-            },
-            "verdict" : {
-              "type" : "Allowed",
-              "evaluatedRules" : [
-                {
-                  "rule" : {
-                    "name" : "Check Y value",
-                    "fullDescription" : "Check Y value"
-                  },
-                  "verdict" : {
-                    "type" : "Allow",
-                    "reasons" : [
-                    ]
-                  }
-                }
-              ]
+        "data" : {
+          "x" : "TEST",
+          "y" : 0
+        },
+        "verdict" : {
+          "type" : "Allowed",
+          "evaluatedRules" : [
+            {
+              "rule" : {
+                "name" : "Check Y value",
+                "fullDescription" : "Check Y value"
+              },
+              "verdict" : {
+                "type" : "Allow",
+                "reasons" : [
+                  "reason"
+                ]
+              }
             }
-          }"""
+          ]
+        }
+      }"""
     )
   }
 

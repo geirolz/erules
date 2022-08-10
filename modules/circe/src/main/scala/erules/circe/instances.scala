@@ -2,6 +2,7 @@ package erules.circe
 
 import erules.circe.report.{JsonReportInstances, JsonReportSyntax}
 import erules.core.*
+import io.circe.generic.semiauto.deriveEncoder
 
 object implicits extends CirceAllInstances with CirceAllSyntax
 
@@ -15,6 +16,9 @@ private[circe] trait BasicTypesCirceInstances {
   import io.circe.*
   import io.circe.syntax.*
 
+  implicit final val evalReasonCirceEncoder: Encoder[EvalReason] =
+    Encoder.encodeString.contramap(_.message)
+
   implicit def engineResultCirceEncoder[T: Encoder]: Encoder[EngineResult[T]] =
     io.circe.generic.semiauto.deriveEncoder[EngineResult[T]]
 
@@ -27,7 +31,7 @@ private[circe] trait BasicTypesCirceInstances {
     }
 
   implicit def ruleResultCirceEncoder[T]: Encoder[RuleResult[T, RuleVerdict]] =
-    io.circe.generic.semiauto.deriveEncoder[RuleResult[T, RuleVerdict]]
+    deriveEncoder[RuleResult[T, RuleVerdict]]
 
   implicit def ruleCirceEncoder[T]: Encoder[AnyTypedRule[T]] =
     Encoder.instance { v =>
@@ -46,9 +50,6 @@ private[circe] trait BasicTypesCirceInstances {
         "reasons" -> Json.fromValues(v.reasons.map(_.asJson))
       )
     }
-
-  implicit final val evalReasonCirceEncoder: Encoder[EvalReason] =
-    io.circe.generic.semiauto.deriveEncoder[EvalReason]
 }
 
 //---------- SYNTAX ----------

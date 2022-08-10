@@ -5,7 +5,7 @@ import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 /** ADT to define the possible responses of the engine evaluation.
   */
-sealed trait RuleResultsInterpreterVerdict[T] extends Serializable {
+sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
 
   /** Result reasons
     */
