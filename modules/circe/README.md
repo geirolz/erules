@@ -4,8 +4,8 @@ and the `JsonReportEncoder` instances to produce a json report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.5"
-  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.5"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.6"
+  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.6"
 ```
 
 ### Usage
