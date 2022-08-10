@@ -1,18 +1,22 @@
 import sbt.project
 import ModuleMdocPlugin.autoImport.mdocScalacOptions
 
-val prjName = "erules"
-val org     = "com.github.geirolz"
+lazy val prjName                = "erules"
+lazy val org                    = "com.github.geirolz"
+lazy val scala213               = "2.13.8"
+lazy val scala31                = "3.1.3"
+lazy val supportedScalaVersions = List(scala213, scala31)
 
 //## global project to no publish ##
 lazy val erules: Project = project
   .in(file("."))
-  .settings(allSettings)
+  .settings(baseSettings)
   .settings(noPublishSettings)
   .settings(
     name := prjName,
     description := "A rules engine evaluator",
-    organization := org
+    organization := org,
+    crossScalaVersions := Nil
   )
   .settings(
     inThisBuild(
@@ -37,7 +41,7 @@ lazy val core: Project =
   buildModule(
     prjModuleName = "core",
     toPublish     = true,
-    parentFolder  = "."
+    folder        = "."
   ).settings(
     mdocOut := file("."),
     libraryDependencies ++= ProjectDependencies.Core.dedicated
@@ -47,7 +51,7 @@ lazy val generic: Project =
   buildModule(
     prjModuleName = "generic",
     toPublish     = true,
-    parentFolder  = "modules"
+    folder        = "modules"
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Generic.dedicated
@@ -60,7 +64,7 @@ lazy val circe: Project =
   buildModule(
     prjModuleName = "circe",
     toPublish     = true,
-    parentFolder  = "modules"
+    folder        = "modules"
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Circe.dedicated
@@ -70,29 +74,29 @@ lazy val scalatest: Project =
   buildModule(
     prjModuleName = "scalatest",
     toPublish     = true,
-    parentFolder  = "modules"
+    folder        = "modules"
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Scalatest.dedicated
     )
 
 //=============================== MODULES UTILS ===============================
-def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String): Project = {
-  val moduleFolder = s"$parentFolder/$prjModuleName"
-  val keys         = prjModuleName.split("-")
-  val id           = keys.reduce(_ + _.capitalize)
-  val docName      = keys.mkString(" ")
-  val docNameStr   = s"$prjName $docName"
+def buildModule(prjModuleName: String, toPublish: Boolean, folder: String): Project = {
+  val keys       = prjModuleName.split("-")
+  val id         = keys.reduce(_ + _.capitalize)
+  val docName    = keys.mkString(" ")
+  val prjFile    = file(s"$folder/$prjModuleName")
+  val docNameStr = s"$prjName $docName"
 
-  Project(id, file(moduleFolder))
-    .settings(allSettings)
+  Project(id, prjFile)
+    .settings(baseSettings)
     .settings(
       description := moduleName.value,
       moduleName := s"$prjName-$prjModuleName",
       name := s"$prjName $docName",
       publish / skip := !toPublish,
-      mdocIn := file(s"$moduleFolder/docs"),
-      mdocOut := file(moduleFolder),
+      mdocIn := prjFile / "docs",
+      mdocOut := prjFile,
       mdocScalacOptions := Seq("-Xsource:3"),
       mdocVariables := Map(
         "ORG"         -> org,
@@ -106,8 +110,6 @@ def buildModule(prjModuleName: String, toPublish: Boolean, parentFolder: String)
 }
 
 //=============================== SETTINGS ===============================
-lazy val allSettings = baseSettings
-
 lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
   publish := {},
   publishLocal := {},
@@ -117,11 +119,10 @@ lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
 
 lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   // scala
-  crossScalaVersions := List("2.13.8", "3.1.3"),
-  scalaVersion := crossScalaVersions.value.head,
+  crossScalaVersions := supportedScalaVersions,
+  scalaVersion := supportedScalaVersions.head,
   scalacOptions ++= scalacSettings(scalaVersion.value),
-  // test
-  Test / fork := false,
+  versionScheme := Some("early-semver"),
   // dependencies
   resolvers ++= ProjectResolvers.all,
   libraryDependencies ++= ProjectDependencies.common ++ {
