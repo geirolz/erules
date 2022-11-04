@@ -18,7 +18,7 @@ object ProjectDependencies {
 
   object Core {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scala-lang" % "scala-reflect" % "2.13.8"
+      "org.scala-lang" % "scala-reflect" % "2.13.10"
     )
   }
 
@@ -55,7 +55,7 @@ object ProjectDependencies {
     "org.typelevel" %% "log4cats-slf4j" % "2.5.0",
     // test
     "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0" % Test,
-    "org.scalactic" %% "scalactic" % "3.2.13" % Test,
+    "org.scalactic" %% "scalactic" % "3.2.14" % Test,
     "org.scalatest" %% "scalatest" % "3.2.13" % Test,
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
