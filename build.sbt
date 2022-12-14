@@ -4,8 +4,8 @@ import ModuleMdocPlugin.autoImport.mdocScalacOptions
 lazy val prjName                = "erules"
 lazy val org                    = "com.github.geirolz"
 lazy val scala213               = "2.13.8"
-lazy val scala31                = "3.2.1"
-lazy val supportedScalaVersions = List(scala213, scala31)
+lazy val scala32                = "3.2.1"
+lazy val supportedScalaVersions = List(scala213, scala32)
 
 //## global project to no publish ##
 lazy val erules: Project = project
