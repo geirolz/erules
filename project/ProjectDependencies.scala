@@ -5,7 +5,7 @@ object ProjectDependencies {
 
   private val circeVersion      = "0.14.3"
   private val catsVersion       = "2.9.0"
-  private val catsEffectVersion = "3.3.14"
+  private val catsEffectVersion = "3.4.2"
 
   object Plugins {
     val compilerPluginsFor2_13: Seq[ModuleID] = Seq(
