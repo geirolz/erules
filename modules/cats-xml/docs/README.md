@@ -1,11 +1,11 @@
-# Erules Circe
+# Erules Cats Xml
 The purpose of this module is to provide `Encoder` instances of `erules` types
-and the `JsonReportEncoder` instances to produce a json report.
+and the `XmlReportEncoder` instances to produce an XML report.
 
 **Sbt**
 ```sbt
   libraryDependencies += "com.github.geirolz" %% "erules-core" % "@VERSION@"
-  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "@VERSION@"
+  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "@VERSION@"
 ```
 
 ### Usage
@@ -53,21 +53,38 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
 )
 ```
 
-Import 
+Import
 ```scala mdoc:silent
-import erules.circe.implicits.*
+import erules.cats.xml.implicits.*
 ```
 
-And `circe-generic` to derive the `Person` encoder automatically
+Define the `Person` encoder
 ```scala mdoc:silent
-import io.circe.generic.auto.*
+import cats.xml.codec.Encoder
+import cats.xml.XmlNode
+import cats.xml.implicits.*
+
+implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
+  XmlNode("Person")
+    .withAttributes(
+      "name" := person.name,
+      "lastName" := person.lastName,
+      "age" := person.age.value
+    )
+    .withChildren(
+      XmlNode("Citizenship")
+        .withAttributes(
+          "country" := person.citizenship.country.value
+        )
+    )
+)
 ```
 
 And create the JSON report
 ```scala mdoc:to-string
 import erules.core.*
 import erules.implicits.*
-import erules.circe.implicits.*
+import erules.cats.xml.implicits.*
 
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*
@@ -80,5 +97,5 @@ val result: IO[EngineResult[Person]]  = for {
 } yield result
 
 //yolo
-result.unsafeRunSync().asJsonReport
+result.unsafeRunSync().asXmlReport
 ```

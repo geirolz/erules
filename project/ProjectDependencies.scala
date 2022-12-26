@@ -3,9 +3,10 @@ import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
-  private val circeVersion      = "0.14.3"
   private val catsVersion       = "2.9.0"
   private val catsEffectVersion = "3.4.2"
+  private val circeVersion      = "0.14.3"
+  private val catsXmlVersion    = "0.0.7"
 
   object Plugins {
     val compilerPluginsFor2_13: Seq[ModuleID] = Seq(
@@ -36,9 +37,9 @@ object ProjectDependencies {
     )
   }
 
-  object Xml {
+  object CatsXml {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
+      "com.github.geirolz" %% "cats-xml-core" % catsXmlVersion
     )
   }
 

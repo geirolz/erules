@@ -35,7 +35,7 @@ lazy val erules: Project = project
       )
     )
   )
-  .aggregate(core, generic, circe, scalatest)
+  .aggregate(core, generic, circe, `cats-xml`, scalatest)
 
 lazy val core: Project =
   buildModule(
@@ -70,6 +70,16 @@ lazy val circe: Project =
       libraryDependencies ++= ProjectDependencies.Circe.dedicated
     )
 
+lazy val `cats-xml`: Project =
+  buildModule(
+    prjModuleName = "cats-xml",
+    toPublish     = true,
+    folder        = "modules"
+  ).dependsOn(core)
+    .settings(
+      libraryDependencies ++= ProjectDependencies.CatsXml.dedicated
+    )
+
 lazy val scalatest: Project =
   buildModule(
     prjModuleName = "scalatest",
@@ -83,12 +93,11 @@ lazy val scalatest: Project =
 //=============================== MODULES UTILS ===============================
 def buildModule(prjModuleName: String, toPublish: Boolean, folder: String): Project = {
   val keys       = prjModuleName.split("-")
-  val id         = keys.reduce(_ + _.capitalize)
   val docName    = keys.mkString(" ")
   val prjFile    = file(s"$folder/$prjModuleName")
   val docNameStr = s"$prjName $docName"
 
-  Project(id, prjFile)
+  Project(prjModuleName, prjFile)
     .settings(baseSettings)
     .settings(
       description := moduleName.value,
@@ -216,6 +225,7 @@ addCommandAlias(
     core,
     generic,
     circe,
+    `cats-xml`,
     scalatest
   ).map(prj => s"project ${prj.id}-docs; mdoc").mkString(";") + s";project $prjName;"
 )
