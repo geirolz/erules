@@ -80,7 +80,7 @@ implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
 )
 ```
 
-And create the JSON report
+And create the XML report
 ```scala mdoc:to-string
 import erules.core.*
 import erules.implicits.*

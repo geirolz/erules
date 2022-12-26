@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@791d9aef,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@4c8568e9,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@120c9bb3,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@640937ce,Check Age >= 18,None,Some(age)))
 ```
 
 Import
@@ -83,7 +83,7 @@ implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
 )
 ```
 
-And create the JSON report
+And create the XML report
 ```scala
 import erules.core.*
 import erules.implicits.*
@@ -125,7 +125,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="134583" unit="NANOSECONDS"/>
+//      <Duration length="94750" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //    <RuleResult>
@@ -138,7 +138,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="8833" unit="NANOSECONDS"/>
+//      <Duration length="10500" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //   </EvaluatedRules>
