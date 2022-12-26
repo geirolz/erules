@@ -12,7 +12,7 @@ private[xml] sealed trait GenericCatsXmlEncoderInstances {
 
   implicit final val finiteDurationEncoder: Encoder[FiniteDuration] =
     Encoder.of(a =>
-      XmlNode("duration").withAttributes(
+      XmlNode("Duration").withAttributes(
         "length" := a.length,
         "unit" := a.unit.name
       )
@@ -26,7 +26,7 @@ private[xml] sealed trait GenericCatsXmlEncoderInstances {
 
   implicit val throwableEncoder: Encoder[Throwable] =
     Encoder.of(ex =>
-      XmlNode("throwable").withAttributes(
+      XmlNode("Throwable").withAttributes(
         "message" := ex.getMessage,
         "causeMessage" := Option(ex.getCause).map(_.getMessage).getOrElse("")
       )

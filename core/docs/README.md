@@ -110,4 +110,5 @@ result.unsafeRunSync().asReport[String]
 ### Modules
 - [erules-generic](https://github.com/geirolz/erules/tree/main/modules/generic)
 - [erules-circe](https://github.com/geirolz/erules/tree/main/modules/circe)
+- [erules-cats-xml](https://github.com/geirolz/erules/tree/main/modules/cats-xml)
 - [erules-scalatest](https://github.com/geirolz/erules/tree/main/modules/scalatest)

@@ -4,16 +4,26 @@ import cats.effect.IO
 import cats.Id
 import erules.core.{Rule, RulesEngine, RulesEngineIO}
 import erules.core.RuleVerdict.Allow
-import cats.xml.Xml
+import cats.xml.{Xml, XmlNode}
+import cats.xml.codec.Encoder
 
 class XmlReportEncoderSpec extends munit.CatsEffectSuite {
 
-  import cats.xml.syntax.*
-  import cats.xml.generic.encoder.auto.*
+  import cats.xml.implicits.*
   import erules.cats.xml.implicits.*
 
   test("EngineResult.asXmlReport return a well-formatted Xml report") {
+
     case class Foo(x: String, y: Int)
+    object Foo {
+      implicit val xmlEncoder: Encoder[Foo] = Encoder.of(foo =>
+        XmlNode("Foo")
+          .withAttributes(
+            "x" := foo.x,
+            "y" := foo.y
+          )
+      )
+    }
 
     val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
       Allow.because("because yes!")
@@ -35,7 +45,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
                         <Data>
                          <Foo x="TEST" y="0"/>
                         </Data>
-                        <InterpreterVerdict type="Allowed">
+                        <Verdict type="Allowed">
                          <EvaluatedRules>
                           <RuleResult>
                            <Rule name="Check Y value" description="" targetInfo="">
@@ -48,7 +58,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
                            </Verdict>
                           </RuleResult>
                          </EvaluatedRules>
-                        </InterpreterVerdict>
+                        </Verdict>
                        </EngineResult>"""
     )
   }
