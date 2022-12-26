@@ -4,14 +4,14 @@ and the `XmlReportEncoder` instances to produce an XML report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "@VERSION@"
-  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "@VERSION@"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.7"
+  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "0.0.7"
 ```
 
 ### Usage
 
 Given these data classes
-```scala mdoc:to-string
+```scala
 case class Country(value: String)
 case class Age(value: Int)
 
@@ -25,7 +25,7 @@ case class Person(
 ```
 
 Let's write the rules!
-```scala mdoc:to-string
+```scala
 import erules.core.Rule
 import erules.core.RuleVerdict.*
 import cats.data.NonEmptyList
@@ -36,12 +36,14 @@ val checkCitizenship: Rule[Id, Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
+// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
 
 val checkAdultAge: Rule[Id, Age] =
   Rule("Check Age >= 18").apply[Id, Age] {
     case a: Age if a.value >= 18  => Allow.withoutReasons
     case _                        => Deny.because("Only >= 18 age are allowed!")
   }
+// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
 
 val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
@@ -51,15 +53,16 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@791d9aef,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@4c8568e9,Check Age >= 18,None,Some(age)))
 ```
 
 Import
-```scala mdoc:silent
+```scala
 import erules.cats.xml.implicits.*
 ```
 
 Define the `Person` encoder
-```scala mdoc:silent
+```scala
 import cats.xml.codec.Encoder
 import cats.xml.XmlNode
 import cats.xml.implicits.*
@@ -81,7 +84,7 @@ implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
 ```
 
 And create the JSON report
-```scala mdoc:to-string
+```scala
 import erules.core.*
 import erules.implicits.*
 import erules.cats.xml.implicits.*
@@ -90,12 +93,55 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
+// person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
 val result: IO[EngineResult[Person]]  = for {
   engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
   result <- engine.parEval(person)
 } yield result
+// result: IO[EngineResult[Person]] = IO(...)
 
 //yolo
 result.unsafeRunSync().asXmlReport
+// res0: cats.xml.Xml = <EngineResult>
+//  <Data>
+//   <Person name="Mimmo" lastName="Rossi" age="16">
+//    <Citizenship country="IT"/>
+//   </Person>
+//  </Data>
+//  <Verdict type="Denied">
+//   <EvaluatedRules>
+//    <RuleResult>
+//     <Rule name="Check UK citizenship" description="" targetInfo="citizenship">
+//      <FullDescription>
+//       Check UK citizenship for citizenship
+// </FullDescription>
+//     </Rule>
+//     <Verdict type="Deny">
+//      <Reasons>
+//       <Reason>
+//        Only UK citizenship is allowed!
+// </Reason>
+//      </Reasons>
+//     </Verdict>
+//     <ExecutionTime>
+//      <Duration length="134583" unit="NANOSECONDS"/>
+//     </ExecutionTime>
+//    </RuleResult>
+//    <RuleResult>
+//     <Rule name="Check Age >= 18" description="" targetInfo="age">
+//      <FullDescription>Check Age >= 18 for age</FullDescription>
+//     </Rule>
+//     <Verdict type="Deny">
+//      <Reasons>
+//       <Reason>Only >= 18 age are allowed!</Reason>
+//      </Reasons>
+//     </Verdict>
+//     <ExecutionTime>
+//      <Duration length="8833" unit="NANOSECONDS"/>
+//     </ExecutionTime>
+//    </RuleResult>
+//   </EvaluatedRules>
+//  </Verdict>
+// </EngineResult>
 ```
