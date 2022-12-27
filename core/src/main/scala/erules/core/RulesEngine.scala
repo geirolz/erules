@@ -123,6 +123,6 @@ object RulesEngine {
 
   case class DuplicatedRulesException(duplicates: List[AnyRule])
       extends RuntimeException(s"Duplicated rules found!\n${duplicates
-          .map(_.fullDescription.prepended("- ").mkString)
+          .map(_.fullDescription.prependedAll("- ").mkString)
           .mkString(",")}")
 }
