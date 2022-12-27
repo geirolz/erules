@@ -2,8 +2,10 @@ import sbt.project
 import ModuleMdocPlugin.autoImport.mdocScalacOptions
 
 lazy val prjName                = "erules"
-lazy val org                    = "com.github.geirolz"
-lazy val scala213               = "2.13.8"
+lazy val prjPackageName         = prjName.replaceAll("[^\\p{Alpha}\\d]+", ".")
+lazy val prjDescription         = "A rules engine evaluator"
+lazy val prjOrg                 = "com.github.geirolz"
+lazy val scala213               = "2.13.10"
 lazy val scala32                = "3.2.1"
 lazy val supportedScalaVersions = List(scala213, scala32)
 
@@ -13,15 +15,8 @@ lazy val erules: Project = project
   .settings(baseSettings)
   .settings(noPublishSettings)
   .settings(
-    name := prjName,
-    description := "A rules engine evaluator",
-    organization := org,
-    crossScalaVersions := Nil
-  )
-  .settings(
     inThisBuild(
       List(
-        organization := org,
         homepage := Some(url(s"https://github.com/geirolz/$prjName")),
         licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
         developers := List(
@@ -108,7 +103,7 @@ def buildModule(prjModuleName: String, toPublish: Boolean, folder: String): Proj
       mdocOut := prjFile,
       mdocScalacOptions := Seq("-Xsource:3"),
       mdocVariables := Map(
-        "ORG"         -> org,
+        "ORG"         -> prjOrg,
         "PRJ_NAME"    -> prjName,
         "DOCS_TITLE"  -> docNameStr.split(" ").map(_.capitalize).mkString(" "),
         "MODULE_NAME" -> moduleName.value,
@@ -127,6 +122,10 @@ lazy val noPublishSettings: Seq[Def.Setting[_]] = Seq(
 )
 
 lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
+  // project
+  name := prjName,
+  description := prjDescription,
+  organization := prjOrg,
   // scala
   crossScalaVersions := supportedScalaVersions,
   scalaVersion := supportedScalaVersions.head,

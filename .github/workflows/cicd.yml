@@ -18,7 +18,6 @@ env:
   SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
   PGP_SECRET: ${{ secrets.PGP_SECRET }}
   PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-  SCALACTIC_FILL_FILE_PATHNAMES: "yes"
 
 # jobs
 jobs:
@@ -29,12 +28,12 @@ jobs:
       matrix:
         # supported scala versions
         include:
-          - scala: 2.13.8
+          - scala: 2.13.10
             name: Scala2_13
-            test-tasks: test #coverage suspended due a bug
+            test-tasks: coverage test coverageReport gen-doc
           - scala: 3.2.1
             name: Scala3_2
-            test-tasks: test # scoverage doesn’t support Scala 3
+            test-tasks: coverage test coverageReport
 
     steps:
       - uses: actions/checkout@v3
