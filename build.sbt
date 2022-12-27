@@ -219,7 +219,7 @@ def macroSettings(scalaVersion: String): Seq[String] =
 //=============================== ALIASES ===============================
 addCommandAlias("check", ";clean;test")
 addCommandAlias(
-  "generate-docs",
+  "gen-doc",
   List(
     core,
     generic,
