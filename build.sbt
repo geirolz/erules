@@ -30,6 +30,9 @@ lazy val erules: Project = project
       )
     )
   )
+  .settings(
+    crossScalaVersions := Nil
+  )
   .aggregate(core, generic, circe, `cats-xml`, scalatest)
 
 lazy val core: Project =
