@@ -16,7 +16,7 @@ eRules supports Scala 2.13 and 3
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.7"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.8"
 ```
 
 
@@ -79,7 +79,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@1cf1a60b,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12894/0x0000000802cbcc38@2df2b532,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@60340e78,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@7247d092,Check Age >= 18,None,Some(age)))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -119,7 +119,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 100375 nanoseconds
+// - Execution time: 80875 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +128,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 10375 nanoseconds
+// - Execution time: 7833 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only >= 18 age are allowed!

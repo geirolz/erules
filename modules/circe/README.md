@@ -1,11 +1,11 @@
 # Erules Circe
-The purpose of this module is to provid `Encoder` instances of `erules` types
+The purpose of this module is to provide `Encoder` instances of `erules` types
 and the `JsonReportEncoder` instances to produce a json report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.6"
-  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.6"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.8"
+  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.8"
 ```
 
 ### Usage
@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$10486/0x00000008029eb390@1ea18d05,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$10486/0x00000008029eb390@531ca4f4,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1b2cc14a,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@c99852a,Check Age >= 18,None,Some(age)))
 ```
 
 Import 
@@ -115,7 +115,7 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 125334,
+//           "length" : 96333,
 //           "unit" : "NANOSECONDS"
 //         }
 //       },
@@ -132,7 +132,7 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 56500,
+//           "length" : 10542,
 //           "unit" : "NANOSECONDS"
 //         }
 //       }

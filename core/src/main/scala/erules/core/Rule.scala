@@ -1,13 +1,11 @@
 package erules.core
 
-import cats.{Applicative, ApplicativeThrow, Contravariant, Eq, Functor, Order, Show}
+import cats.{Applicative, ApplicativeThrow, Contravariant, Functor, Order, Show}
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
 import erules.core.Rule.RuleBuilder
 import erules.core.RuleVerdict.Ignore
-
-import scala.util.Try
 
 sealed trait Rule[+F[_], -T] extends Serializable {
 
@@ -141,9 +139,11 @@ sealed trait Rule[+F[_], -T] extends Serializable {
 
   // std
   override final def equals(obj: Any): Boolean =
-    Try(obj.asInstanceOf[Rule[F, T]])
-      .map(Eq[Rule[F, T]].eqv(this, _))
-      .getOrElse(false)
+    obj match {
+      case that: Rule[_, _] =>
+        Rule.catsOrderInstanceForRule[F, T].eqv(this, that.asInstanceOf[Rule[F, T]])
+      case _ => false
+    }
 }
 
 object Rule extends RuleInstances with RuleSyntax {
@@ -215,7 +215,7 @@ object Rule extends RuleInstances with RuleSyntax {
 
 private[erules] trait RuleInstances {
 
-  implicit def catsContravariantForRule[F[_], T]: Contravariant[Rule[F, *]] =
+  implicit def catsContravariantForRule[F[_]]: Contravariant[Rule[F, *]] =
     new Contravariant[Rule[F, *]] {
       override def contramap[A, B](fa: Rule[F, A])(f: B => A): Rule[F, B] = fa.contramap(f)
     }
