@@ -3,25 +3,13 @@ package erules.core
 import cats.{Functor, Id, MonadThrow, Parallel}
 import cats.data.NonEmptyList
 import cats.effect.kernel.Async
-import org.typelevel.log4cats.StructuredLogger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import scala.annotation.unused
 
 case class RulesEngine[F[_], T] private (
   rules: NonEmptyList[Rule[F, T]],
-  private val interpreter: RuleResultsInterpreter,
-  private val logger: Option[StructuredLogger[F]] = None
+  private val interpreter: RuleResultsInterpreter
 ) {
 
   import cats.implicits.*
-
-  // logger
-  def withLogger(_logger: StructuredLogger[F]): RulesEngine[F, T] =
-    copy(logger = Some(_logger))
-
-  def withLogger(implicit @unused F: Async[F]): RulesEngine[F, T] =
-    copy(logger = Some(Slf4jLogger.getLogger[F]))
 
   // execution
   def parEval(data: T)(implicit
@@ -30,19 +18,19 @@ case class RulesEngine[F[_], T] private (
   ): F[EngineResult[T]] =
     createResult(
       data,
-      rules.parTraverse(evalZipRuleLogging(data, _))
+      rules.parTraverse(_.eval(data))
     )
 
   def parEvalN(data: T, parallelismLevel: Int)(implicit F: Async[F]): F[EngineResult[T]] =
     createResult(
       data,
-      F.parTraverseN(parallelismLevel)(rules)(evalZipRuleLogging(data, _))
+      F.parTraverseN(parallelismLevel)(rules)(_.eval(data))
     )
 
   def seqEval(data: T)(implicit F: Async[F]): F[EngineResult[T]] =
     createResult(
       data,
-      rules.map(evalZipRuleLogging(data, _)).sequence
+      rules.map(_.eval(data)).sequence
     )
 
   private def createResult(
@@ -56,21 +44,6 @@ case class RulesEngine[F[_], T] private (
           verdict = interpreter.interpret(evaluatedRules)
         )
       )
-
-  private def evalZipRuleLogging(data: T, rule: Rule[F, T])(implicit
-    F: Async[F]
-  ): F[RuleResult.Free[T]] = {
-    rule
-      .eval(data)
-      .flatTap {
-        case RuleResult(_, Right(_), _) => F.unit
-        case RuleResult(rule, Left(ex), _) =>
-          logger match {
-            case Some(l) => l.info(ex)(s"$rule failed!")
-            case None    => F.unit
-          }
-      }
-  }
 }
 object RulesEngine {
 
