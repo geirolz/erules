@@ -4,7 +4,7 @@ import sbt.Keys.scalaVersion
 object ProjectDependencies {
 
   private val catsVersion       = "2.9.0"
-  private val catsEffectVersion = "3.4.7"
+  private val catsEffectVersion = "3.4.8"
   private val circeVersion      = "0.14.4"
   private val catsXmlVersion    = "0.0.8"
 
@@ -53,10 +53,9 @@ object ProjectDependencies {
   lazy val common: Seq[ModuleID] = Seq(
     "org.typelevel" %% "cats-core" % catsVersion,
     "org.typelevel" %% "cats-effect" % catsEffectVersion,
-    "org.typelevel" %% "log4cats-slf4j" % "2.5.0",
     // test
     "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0" % Test,
-    "org.scalactic" %% "scalactic" % "3.2.14" % Test,
+    "org.scalactic" %% "scalactic" % "3.2.15" % Test,
     "org.scalatest" %% "scalatest" % "3.2.15" % Test,
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
