@@ -3,7 +3,6 @@ package erules.core
 import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
-import cats.Id
 import erules.core.RuleVerdict.{Allow, Deny, Ignore}
 import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
 import org.scalatest.wordspec.AsyncWordSpec
@@ -28,7 +27,7 @@ class RuleSpec
       case class Bar(baz: Baz)
       case class Baz(value: String)
 
-      val bazRule: PureRule[Baz] = Rule("Check Baz value").check[Id, Baz](
+      val bazRule: PureRule[Baz] = Rule("Check Baz value").check[Baz](
         _.value match {
           case "" => Deny.because("Empty value")
           case _  => Allow.withoutReasons
@@ -59,8 +58,7 @@ class RuleSpec
       }
 
       for {
-        _ <- rule
-          .eval(Foo("TEST", 0))
+        _ <- rule.eval(Foo("TEST", 0))
           .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
         _ <- rule
           .eval(Bar("TEST", 1))
@@ -139,7 +137,7 @@ class RuleSpec
       case class Foo() extends ADT
       case class Bar() extends ADT
 
-      val rule: PureRule[ADT] = Rule("Check Y value").check[Id, ADT] {
+      val rule: PureRule[ADT] = Rule("Check Y value").check[ADT] {
         case Foo() => Allow.withoutReasons
         case Bar() => Deny.withoutReasons
       }
@@ -161,7 +159,7 @@ class RuleSpec
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -174,7 +172,7 @@ class RuleSpec
     "return the Ignore once evaluated out of the defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -260,7 +258,7 @@ class RuleSpec
       case class Foo() extends ADT
       case class Bar() extends ADT
 
-      val rule: Rule[Id, ADT] = Rule("Check Y value").check[Id, ADT] {
+      val rule: PureRule[ADT] = Rule("Check Y value").check[ADT] {
         case Foo() => Allow.withoutReasons
         case Bar() => Deny.withoutReasons
       }
@@ -275,7 +273,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -286,7 +284,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -301,10 +299,10 @@ class RuleSpec
 
       val duplicated: List[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 1) =>
+          Rule("Check Y value").partially[Foo] { case Foo(_, 1) =>
             Allow.withoutReasons
           }
         )
@@ -318,10 +316,10 @@ class RuleSpec
 
       val duplicated: Seq[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check X value").partially[Id, Foo] { case Foo("Foo", _) =>
+          Rule("Check X value").partially[Foo] { case Foo("Foo", _) =>
             Allow.withoutReasons
           }
         )

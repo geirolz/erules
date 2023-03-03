@@ -19,7 +19,4 @@ private[erules] trait AllCoreInstances
 
 //---------- SYNTAX ----------
 object syntax extends AllCoreSyntax
-private[erules] trait AllCoreSyntax
-    extends RuleSyntax
-    with EvalReasonSyntax
-    with ReportEncoderSyntax
+private[erules] trait AllCoreSyntax extends EvalReasonSyntax with ReportEncoderSyntax

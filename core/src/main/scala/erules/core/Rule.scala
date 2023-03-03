@@ -1,10 +1,10 @@
 package erules.core
 
-import cats.{Applicative, ApplicativeThrow, Contravariant, Functor, Order, Show}
+import cats.{Applicative, ApplicativeThrow, Contravariant, Functor, Id, Order, Show}
+import cats.arrow.FunctionK
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
-import erules.core.Rule.RuleBuilder
 import erules.core.RuleVerdict.Ignore
 
 sealed trait Rule[+F[_], -T] extends Serializable {
@@ -112,9 +112,20 @@ sealed trait Rule[+F[_], -T] extends Serializable {
     * @tparam G
     *   Effect
     * @return
-    *   A lifted rule to specifed effect type `G`
+    *   A lifted rule to specified effect type `G`
     */
   def covary[G[_]: Applicative](implicit env: F[RuleVerdict] <:< RuleVerdict): Rule[G, T]
+
+  /** Lift a rule with effect `F[_]` to specified `G[_]`. Value is lifted using specified
+    * `FunctionK` instance
+    * @param f
+    *   FunctionK instance to lift `F[_]` to `G[_]`
+    * @tparam G
+    *   new effect for the rule
+    * @return
+    *   A lifted rule to specified effect of type `G`
+    */
+  def mapK[FF[X] >: F[X], G[_]](f: FunctionK[FF, G]): Rule[G, T]
 
   // eval
   /** Same as `eval` but has only the `RuleVerdict` value
@@ -146,7 +157,7 @@ sealed trait Rule[+F[_], -T] extends Serializable {
     }
 }
 
-object Rule extends RuleInstances with RuleSyntax {
+object Rule extends RuleInstances {
 
   import erules.core.utils.CollectionsUtils.*
 
@@ -178,6 +189,21 @@ object Rule extends RuleInstances with RuleSyntax {
 
     def const[F[_]: Applicative, T](v: RuleVerdict): Rule[F, T] =
       apply(_ => Applicative[F].pure(v))
+
+    // =================/ Pure /=================
+    def apply[T](f: Function[T, RuleVerdict])(implicit dummyImplicit: DummyImplicit): PureRule[T] =
+      apply[Id, T](f)
+
+    def check[T](f: Function[T, RuleVerdict])(implicit dummyImplicit: DummyImplicit): PureRule[T] =
+      check[Id, T](f)
+
+    def partially[T](f: PartialFunction[T, RuleVerdict])(implicit
+      dummyImplicit: DummyImplicit
+    ): PureRule[T] =
+      partially[Id, T](f)
+
+    def const[T](v: RuleVerdict)(implicit dummyImplicit: DummyImplicit): PureRule[T] =
+      const[Id, T](v)
   }
 
   private[erules] case class RuleImpl[+F[_], -TT](
@@ -188,24 +214,27 @@ object Rule extends RuleInstances with RuleSyntax {
   ) extends Rule[F, TT] {
 
     // docs
-    def describe(description: String): Rule[F, TT] =
+    override def describe(description: String): Rule[F, TT] =
       copy(description = Option(description))
 
-    def targetInfo(targetInfo: String): Rule[F, TT] =
+    override def targetInfo(targetInfo: String): Rule[F, TT] =
       copy(targetInfo = Option(targetInfo))
 
     // map
-    def contramap[U](cf: U => TT): Rule[F, U] =
+    override def contramap[U](cf: U => TT): Rule[F, U] =
       copy(f = cf.andThen(f))
 
     // eval
-    def evalRaw[FF[X] >: F[X], TT2 <: TT](data: TT2): FF[RuleVerdict] =
+    override def evalRaw[FF[X] >: F[X], TT2 <: TT](data: TT2): FF[RuleVerdict] =
       f(data)
 
-    def covary[G[_]: Applicative](implicit
+    override def covary[G[_]: Applicative](implicit
       env: F[RuleVerdict] <:< RuleVerdict
     ): Rule[G, TT] =
       copy[G, TT](f = f.andThen(fa => Applicative[G].pure(env(fa))))
+
+    override def mapK[FF[X] >: F[X], G[_]](f: FunctionK[FF, G]): Rule[G, TT] =
+      copy[G, TT](f = this.f.andThen(f.apply))
   }
 
   // =================/ UTILS /=================
@@ -237,11 +266,5 @@ private[erules] trait RuleInstances {
 
   implicit class PureRuleOps[F[_]: Functor, T](fa: F[PureRule[T]]) {
     def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
-  }
-}
-
-private[erules] trait RuleSyntax {
-  implicit class RuleBuilderStringOps(private val ctx: StringContext) {
-    def r(args: Any*): RuleBuilder = new RuleBuilder(ctx.s(args))
   }
 }
