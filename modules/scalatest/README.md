@@ -3,7 +3,7 @@
 ### Scalatest
 Using scalatest we can easily test our engine importing the `erules-scalatest` module.
 ```sbt mdoc
-  libraryDependencies += "com.github.geirolz" %% "erules-scalatest" % "0.0.8"
+  libraryDependencies += "com.github.geirolz" %% "erules-scalatest" % "0.0.9"
 ```
 
 #### Matchers

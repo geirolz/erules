@@ -79,7 +79,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@60340e78,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@7247d092,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@3df931c5,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@6b57b3a7,Check Age >= 18,None,Some(age)))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -119,7 +119,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 80875 nanoseconds
+// - Execution time: 115458 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +128,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 7833 nanoseconds
+// - Execution time: 9125 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only >= 18 age are allowed!

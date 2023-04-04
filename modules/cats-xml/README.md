@@ -4,8 +4,8 @@ and the `XmlReportEncoder` instances to produce an XML report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.8"
-  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "0.0.8"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.9"
+  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "0.0.9"
 ```
 
 ### Usage
@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1ed3e52e,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1df281bb,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@5f180ce6,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@2cb1276,Check Age >= 18,None,Some(age)))
 ```
 
 Import
@@ -125,7 +125,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="155625" unit="NANOSECONDS"/>
+//      <Duration length="75250" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //    <RuleResult>
@@ -138,7 +138,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="11125" unit="NANOSECONDS"/>
+//      <Duration length="7750" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //   </EvaluatedRules>
