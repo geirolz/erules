@@ -36,14 +36,14 @@ val checkCitizenship: Rule[Id, Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
+// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: Rule[Id, Age] =
   Rule("Check Age >= 18").apply[Id, Age] {
     case a: Age if a.value >= 18  => Allow.withoutReasons
     case _                        => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
+// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
 val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1b2cc14a,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@c99852a,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@6639441a,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@12cfa57a,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import 
@@ -103,7 +103,7 @@ result.unsafeRunSync().asJsonReport
 //     "type" : "Denied",
 //     "evaluatedRules" : [
 //       {
-//         "rule" : {
+//         "ruleInfo" : {
 //           "name" : "Check UK citizenship",
 //           "targetInfo" : "citizenship",
 //           "fullDescription" : "Check UK citizenship for citizenship"
@@ -115,12 +115,12 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 96333,
+//           "length" : 102041,
 //           "unit" : "NANOSECONDS"
 //         }
 //       },
 //       {
-//         "rule" : {
+//         "ruleInfo" : {
 //           "name" : "Check Age >= 18",
 //           "targetInfo" : "age",
 //           "fullDescription" : "Check Age >= 18 for age"
@@ -132,7 +132,7 @@ result.unsafeRunSync().asJsonReport
 //           ]
 //         },
 //         "executionTime" : {
-//           "length" : 10542,
+//           "length" : 9625,
 //           "unit" : "NANOSECONDS"
 //         }
 //       }

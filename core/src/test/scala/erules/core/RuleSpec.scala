@@ -58,11 +58,16 @@ class RuleSpec
       }
 
       for {
-        _ <- rule.eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+        _ <- rule
+          .eval(Foo("TEST", 0))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
 
@@ -84,10 +89,12 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
   }
@@ -104,10 +111,14 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
         _ <- rule
           .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
 
@@ -123,10 +134,12 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
         _ <- rule
           .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
   }
@@ -146,11 +159,15 @@ class RuleSpec
         _ <- rule
           .covary[IO]
           .eval(Foo())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
         _ <- rule
           .covary[IO]
           .eval(Bar())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
   }
@@ -166,7 +183,7 @@ class RuleSpec
       rule
         .covary[IO]
         .eval(Foo("TEST", 0))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+        .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons))
     }
 
     "return the Ignore once evaluated out of the defined domain" in {
@@ -179,7 +196,9 @@ class RuleSpec
       rule
         .covary[IO]
         .eval(Foo("TEST", 1))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Ignore.noMatch)))
+        .assertingIgnoringTimes(
+          _ shouldBe RuleResult.forRule(rule).succeeded(Ignore.noMatch)
+        )
     }
   }
 

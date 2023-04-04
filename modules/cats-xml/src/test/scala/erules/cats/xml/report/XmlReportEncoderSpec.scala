@@ -48,9 +48,9 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
                         <Verdict type="Allowed">
                          <EvaluatedRules>
                           <RuleResult>
-                           <Rule name="Check Y value" description="" targetInfo="">
+                           <RuleInfo name="Check Y value" description="" targetInfo="">
                             <FullDescription>Check Y value</FullDescription>
-                           </Rule>
+                           </RuleInfo>
                            <Verdict type="Allow">
                             <Reasons>
                              <Reason>because yes!</Reason>

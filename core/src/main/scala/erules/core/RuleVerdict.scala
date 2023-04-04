@@ -56,6 +56,7 @@ private[erules] trait RuleVerdictBecauseSupport[+T <: RuleVerdict] {
 
 object RuleVerdict extends RuleVerdictInstances {
 
+  // noinspection ScalaWeakerAccess
   val noReasons: List[EvalReason] = Nil
 
   // ------------------------------ ALLOW ------------------------------

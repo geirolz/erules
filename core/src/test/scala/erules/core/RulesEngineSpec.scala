@@ -11,7 +11,8 @@ import erules.core.testings.ErulesAsyncAssertingSyntax
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 
-import scala.util.{Right, Try}
+import scala.annotation.unused
+import scala.util.Try
 
 class RulesEngineSpec
     extends AsyncWordSpec
@@ -19,10 +20,11 @@ class RulesEngineSpec
     with Matchers
     with ErulesAsyncAssertingSyntax {
 
+  case class Foo(@unused x: String, @unused y: Int)
+
   "RulesEngine" should {
     "Return a DuplicatedRulesException with duplicated rules" in {
 
-      case class Foo(x: String, y: Int)
       val allowYEqZero1: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] {
         case Foo(_, 0) =>
           Allow.withoutReasons
@@ -40,7 +42,7 @@ class RulesEngineSpec
         )
         .denyAllNotAllowed
         .failed
-        .get shouldBe a[DuplicatedRulesException]
+        .get shouldBe a[DuplicatedRulesException[_[_], Foo]]
     }
   }
 
@@ -49,7 +51,6 @@ class RulesEngineSpec
 
     "Respond with DENIED when there are no rules for the target" in {
 
-      case class Foo(x: String, y: Int)
       val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
         Allow.withoutReasons
       }
@@ -75,7 +76,6 @@ class RulesEngineSpec
 
     "Respond with DENIED when a rule Deny the target" in {
 
-      case class Foo(x: String, y: Int)
       val denyXEqTest: PureRule[Foo] = Rule("Check X value").partially[Id, Foo] {
         case Foo("TEST", _) => Deny.withoutReasons
       }
@@ -100,7 +100,9 @@ class RulesEngineSpec
             data = Foo("TEST", 0),
             verdict = Denied(
               NonEmptyList.of(
-                RuleResult(denyXEqTest, Right(RuleVerdict.Deny.withoutReasons))
+                RuleResult
+                  .forRule(denyXEqTest)
+                  .succeeded(RuleVerdict.Deny.withoutReasons)
               )
             )
           )
@@ -108,8 +110,6 @@ class RulesEngineSpec
     }
 
     "Respond with ALLOWED when a ALL rules allow the target" in {
-
-      case class Foo(x: String, y: Int)
 
       val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
         Allow.withoutReasons
@@ -127,7 +127,7 @@ class RulesEngineSpec
           data = Foo("TEST", 0),
           verdict = Allowed(
             NonEmptyList.of(
-              RuleResult(allowYEqZero, Right(RuleVerdict.Allow.withoutReasons))
+              RuleResult.forRule(allowYEqZero).succeeded(RuleVerdict.Allow.withoutReasons)
             )
           )
         )
@@ -138,7 +138,6 @@ class RulesEngineSpec
   "RulesEngine.allowAllNotDenied.eval" should {
 
     "Respond with DENIED for safety in case of rule evaluation error" in {
-      case class Foo(x: String, y: Int)
 
       val ex1 = new RuntimeException("BOOM")
       val ex2 = new RuntimeException("PUFF")
@@ -163,8 +162,8 @@ class RulesEngineSpec
           data = Foo("TEST", 1),
           verdict = Denied(
             NonEmptyList.of(
-              RuleResult.denyForSafetyInCaseOfError(failed1, ex1),
-              RuleResult.denyForSafetyInCaseOfError(failed2, ex2)
+              RuleResult.forRule(failed1).denyForSafetyInCaseOfError(ex1),
+              RuleResult.forRule(failed2).denyForSafetyInCaseOfError(ex2)
             )
           )
         )
@@ -173,7 +172,6 @@ class RulesEngineSpec
 
     "Respond with ALLOWED when there are no rules for the target" in {
 
-      case class Foo(x: String, y: Int)
       val denyYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
         Deny.withoutReasons
       }
@@ -199,7 +197,6 @@ class RulesEngineSpec
 
     "Respond with DENIED when a rule Deny the target" in {
 
-      case class Foo(x: String, y: Int)
       val denyXEqTest: Rule[Id, Foo] = Rule("Check X value").partially[Id, Foo] {
         case Foo("TEST", _) =>
           Deny.withoutReasons
@@ -224,7 +221,7 @@ class RulesEngineSpec
           data = Foo("TEST", 0),
           verdict = Denied(
             NonEmptyList.of(
-              RuleResult(denyXEqTest, Right(RuleVerdict.Deny.withoutReasons))
+              RuleResult.forRule(denyXEqTest).succeeded(RuleVerdict.Deny.withoutReasons)
             )
           )
         )
@@ -232,8 +229,6 @@ class RulesEngineSpec
     }
 
     "Respond with ALLOWED when a ALL rules allow the target" in {
-
-      case class Foo(x: String, y: Int)
 
       val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
         Allow.withoutReasons
@@ -251,7 +246,7 @@ class RulesEngineSpec
           data = Foo("TEST", 0),
           verdict = Allowed(
             NonEmptyList.of(
-              RuleResult(allowYEqZero, Right(RuleVerdict.Allow.withoutReasons))
+              RuleResult.forRule(allowYEqZero).succeeded(RuleVerdict.Allow.withoutReasons)
             )
           )
         )

@@ -36,14 +36,14 @@ val checkCitizenship: Rule[Id, Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
+// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: Rule[Id, Age] =
   Rule("Check Age >= 18").apply[Id, Age] {
     case a: Age if a.value >= 18  => Allow.withoutReasons
     case _                        => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
+// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
 val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
@@ -53,7 +53,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1ed3e52e,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@1df281bb,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@434a6b0a,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@1c4a6867,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import
@@ -112,11 +112,11 @@ result.unsafeRunSync().asXmlReport
 //  <Verdict type="Denied">
 //   <EvaluatedRules>
 //    <RuleResult>
-//     <Rule name="Check UK citizenship" description="" targetInfo="citizenship">
+//     <RuleInfo name="Check UK citizenship" description="" targetInfo="citizenship">
 //      <FullDescription>
 //       Check UK citizenship for citizenship
 // </FullDescription>
-//     </Rule>
+//     </RuleInfo>
 //     <Verdict type="Deny">
 //      <Reasons>
 //       <Reason>
@@ -125,20 +125,20 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="155625" unit="NANOSECONDS"/>
+//      <Duration length="84708" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //    <RuleResult>
-//     <Rule name="Check Age >= 18" description="" targetInfo="age">
+//     <RuleInfo name="Check Age >= 18" description="" targetInfo="age">
 //      <FullDescription>Check Age >= 18 for age</FullDescription>
-//     </Rule>
+//     </RuleInfo>
 //     <Verdict type="Deny">
 //      <Reasons>
 //       <Reason>Only >= 18 age are allowed!</Reason>
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="11125" unit="NANOSECONDS"/>
+//      <Duration length="8000" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //   </EvaluatedRules>

@@ -1,6 +1,6 @@
 package erules.core
 
-import cats.{Functor, Id, MonadThrow, Parallel}
+import cats.{Applicative, Id, MonadThrow, Parallel}
 import cats.data.NonEmptyList
 import cats.effect.kernel.Async
 
@@ -35,8 +35,8 @@ case class RulesEngine[F[_], T] private (
 
   private def createResult(
     data: T,
-    evalRes: F[NonEmptyList[RuleResult.Free[T]]]
-  )(implicit F: Functor[F]): F[EngineResult[T]] =
+    evalRes: F[NonEmptyList[RuleResult.Unbiased]]
+  )(implicit F: Applicative[F]): F[EngineResult[T]] =
     evalRes
       .map(evaluatedRules =>
         EngineResult(
@@ -67,7 +67,7 @@ object RulesEngine {
       head1: Rule[G, T],
       tail: Rule[G, T]*
     )(implicit env: G[Any] <:< Id[Any]): RulesEngineIntBuilder[F, T] =
-      withRules[T](NonEmptyList.of[Rule[Id, T]](head1, tail*).mapLift[F])
+      withRules[T](NonEmptyList.of[Rule[G, T]](head1, tail*).mapLift[F])
 
     def withRules[G[X] <: Id[X], T](rules: NonEmptyList[PureRule[T]])(implicit
       env: G[Any] <:< Id[Any]
@@ -94,7 +94,7 @@ object RulesEngine {
       withInterpreter(RuleResultsInterpreter.Defaults.denyAllNotAllowed)
   }
 
-  case class DuplicatedRulesException(duplicates: List[AnyRule])
+  case class DuplicatedRulesException[F[_], T](duplicates: List[Rule[F, T]])
       extends RuntimeException(s"Duplicated rules found!\n${duplicates
           .map(_.fullDescription.prependedAll("- ").mkString)
           .mkString(",")}")

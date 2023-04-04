@@ -13,9 +13,9 @@ class TestErulesMatchers extends AsyncFunSuite with AsyncIOSpec with ErulesMatch
 
   test("RuleResultsInterpreterVerdict should be allowed and should not be denied") {
 
-    val verdict: Allowed[Nothing] = Allowed(
+    val verdict: Allowed = Allowed(
       NonEmptyList.of(
-        RuleResult.const("Foo", Allow.withoutReasons)
+        RuleResult.forRuleName("Foo").succeeded(Allow.withoutReasons)
       )
     )
 
@@ -25,9 +25,9 @@ class TestErulesMatchers extends AsyncFunSuite with AsyncIOSpec with ErulesMatch
 
   test("RuleResultsInterpreterVerdict should be denied and should not be allowed") {
 
-    val verdict: Denied[Nothing] = Denied(
+    val verdict: Denied = Denied(
       NonEmptyList.of(
-        RuleResult.const("Foo", Deny.withoutReasons)
+        RuleResult.forRuleName("Foo").succeeded(Deny.withoutReasons)
       )
     )
 

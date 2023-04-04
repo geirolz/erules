@@ -42,25 +42,25 @@ private[erules] trait StringReportInstances {
 
   implicit def stringReportEncoderForEngineResult[T](implicit
     showT: Show[T] = Show.fromToString[T],
-    reportEncoderERIR: StringReportEncoder[RuleResultsInterpreterVerdict[T]]
+    reportEncoderERIR: StringReportEncoder[RuleResultsInterpreterVerdict]
   ): StringReportEncoder[EngineResult[T]] =
     er =>
       StringReportEncoder.paragraph("ENGINE VERDICT", "#")(
         s"""
            |Data: ${showT.show(er.data)}
-           |Rules: ${er.verdict.evaluatedRules.size}
+           |Rules: ${er.verdict.evaluatedResults.size}
            |${reportEncoderERIR.report(er.verdict)}
            |""".stripMargin
       )
 
-  implicit def stringReportEncoderForRuleResultsInterpreterVerdict[T](implicit
-    reportEncoderEvalRule: StringReportEncoder[RuleResult[T, ? <: RuleVerdict]]
-  ): StringReportEncoder[RuleResultsInterpreterVerdict[T]] =
+  implicit def stringReportEncoderForRuleResultsInterpreterVerdict(implicit
+    reportEncoderEvalRule: StringReportEncoder[RuleResult.Unbiased]
+  ): StringReportEncoder[RuleResultsInterpreterVerdict] =
     t => {
 
-      val rulesReport: String = t.evaluatedRules
+      val rulesReport: String = t.evaluatedResults
         .map(er =>
-          StringReportEncoder.paragraph(er.rule.fullDescription)(
+          StringReportEncoder.paragraph(er.ruleInfo.fullDescription)(
             reportEncoderEvalRule.report(er)
           )
         )
@@ -78,8 +78,7 @@ private[erules] trait StringReportInstances {
          |""".stripMargin
     }
 
-  implicit def stringReportEncoderForRuleRuleResult[T]
-    : StringReportEncoder[RuleResult[T, ? <: RuleVerdict]] =
+  implicit val stringReportEncoderForRuleRuleResult: StringReportEncoder[RuleResult.Unbiased] =
     er => {
 
       val reasons: String = er.verdict.map(_.reasons) match {
@@ -88,9 +87,9 @@ private[erules] trait StringReportInstances {
         case Right(reasons) => s"- Because: ${EvalReason.stringifyList(reasons)}"
       }
 
-      s"""|- Rule: ${er.rule.name}
-          |- Description: ${er.rule.description.getOrElse("")}
-          |- Target: ${er.rule.targetInfo.getOrElse("")}
+      s"""|- Rule: ${er.ruleInfo.name}
+          |- Description: ${er.ruleInfo.description.getOrElse("")}
+          |- Target: ${er.ruleInfo.targetInfo.getOrElse("")}
           |- Execution time: ${er.executionTime
            .map(Show.catsShowForFiniteDuration.show)
            .getOrElse("*not measured*")}

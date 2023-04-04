@@ -19,7 +19,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.of(
-          RuleResult.const("Ignore", Ignore.withoutReasons)
+          RuleResult.forRuleName("Ignore").succeeded(Ignore.withoutReasons)
         )
       )
 
@@ -36,13 +36,13 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.of(
-          RuleResult.const("Allow all", Allow.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons)
         )
       )
 
       result shouldBe Allowed(
         NonEmptyList.of(
-          RuleResult.const("Allow all", Allow.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons)
         )
       )
     }
@@ -53,14 +53,14 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.of(
-          RuleResult.const("Allow all", Allow.withoutReasons),
-          RuleResult.const("Deny all", Deny.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons),
+          RuleResult.forRuleName("Deny all").succeeded(Deny.withoutReasons)
         )
       )
 
       result shouldBe Denied(
         NonEmptyList.of(
-          RuleResult.const("Deny all", Deny.withoutReasons)
+          RuleResult.forRuleName("Deny all").succeeded(Deny.withoutReasons)
         )
       )
     }
@@ -76,13 +76,13 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.one(
-          RuleResult(allowAll, Left(ex))
+          RuleResult.forRule(allowAll).failed(ex)
         )
       )
 
       result shouldBe Denied(
         NonEmptyList.of(
-          RuleResult.denyForSafetyInCaseOfError(allowAll, ex)
+          RuleResult.forRule(allowAll).denyForSafetyInCaseOfError(ex)
         )
       )
     }
@@ -96,7 +96,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.of(
-          RuleResult.const("Ignore", Ignore.withoutReasons)
+          RuleResult.forRuleName("Ignore").succeeded(Ignore.withoutReasons)
         )
       )
 
@@ -113,13 +113,13 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.one(
-          RuleResult.const("Allow all", Allow.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons)
         )
       )
 
       result shouldBe Allowed(
         NonEmptyList.of(
-          RuleResult.const("Allow all", Allow.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons)
         )
       )
     }
@@ -131,14 +131,14 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.of(
-          RuleResult.const("Allow all", Allow.withoutReasons),
-          RuleResult.const("Deny all", Deny.withoutReasons)
+          RuleResult.forRuleName("Allow all").succeeded(Allow.withoutReasons),
+          RuleResult.forRuleName("Deny all").succeeded(Deny.withoutReasons)
         )
       )
 
       result shouldBe Denied(
         NonEmptyList.of(
-          RuleResult.const[Foo, Deny]("Deny all", Deny.withoutReasons)
+          RuleResult.forRuleName("Deny all").succeeded(Deny.withoutReasons)
         )
       )
     }
@@ -154,13 +154,13 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val result = interpreter.interpret(
         NonEmptyList.one(
-          RuleResult(allowAll, Left(ex))
+          RuleResult.forRule(allowAll).failed(ex)
         )
       )
 
       result shouldBe Denied(
         NonEmptyList.of(
-          RuleResult.denyForSafetyInCaseOfError(allowAll, ex)
+          RuleResult.forRule(allowAll).denyForSafetyInCaseOfError(ex)
         )
       )
     }

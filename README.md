@@ -62,14 +62,14 @@ val checkCitizenship: Rule[Id, Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
+// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: Rule[Id, Age] =
   Rule("Check Age >= 18").apply[Id, Age] {
     case a: Age if a.value >= 18  => Allow.withoutReasons
     case _                        => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
+// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
 val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
   checkCitizenship
@@ -79,7 +79,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@60340e78,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$15987/0x0000000803641980@7247d092,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@1d02c83e,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@6ab9a64b,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -119,7 +119,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 80875 nanoseconds
+// - Execution time: 121084 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +128,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 7833 nanoseconds
+// - Execution time: 10333 nanoseconds
 // 
 // - Verdict: Right(Deny)
 // - Because: Only >= 18 age are allowed!

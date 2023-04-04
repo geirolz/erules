@@ -1,49 +1,74 @@
 package erules.core
 
-import cats.{Eq, Order}
-import erules.core.RuleVerdict.Deny
+import cats.Order
+import erules.core.RuleVerdict.*
 
 import scala.concurrent.duration.FiniteDuration
 
-case class RuleResult[-T, +V <: RuleVerdict](
-  rule: AnyTypedRule[T],
+case class RuleResult[+V <: RuleVerdict] private (
+  ruleInfo: RuleInfo,
   verdict: EitherThrow[V],
-  executionTime: Option[FiniteDuration] = None
+  executionTime: Option[FiniteDuration]
 ) extends Serializable {
 
-  def mapRule[TT <: T](f: AnyTypedRule[TT] => AnyTypedRule[TT]): RuleResult[TT, V] =
-    copy(rule = f(rule))
-
-  def drainExecutionTime: RuleResult[T, V] =
+  def drainExecutionTime: RuleResult[V] =
     copy(executionTime = None)
 }
 object RuleResult extends RuleResultInstances {
 
-  type Free[-T] = RuleResult[T, RuleVerdict]
+  type Unbiased = RuleResult[RuleVerdict]
 
-  def const[T, V <: RuleVerdict](ruleName: String, v: V): RuleResult[T, V] =
-    RuleResult(Rule(ruleName).const[EitherThrow, T](v), Right(v))
+  def apply(ruleInfo: RuleInfo): RuleResultBuilder =
+    new RuleResultBuilder(ruleInfo)
 
-  def failed[T, V <: RuleVerdict](ruleName: String, ex: Throwable): RuleResult[T, V] =
-    RuleResult(Rule(ruleName).failed[EitherThrow, T](ex), Left(ex))
+  def forRuleName(ruleName: String): RuleResultBuilder =
+    apply(RuleInfo(ruleName))
 
-  def noMatch[T, V <: RuleVerdict](v: V): RuleResult[T, V] =
-    const("No match", v)
+  def forRule[F[_], T](rule: Rule[F, T]): RuleResultBuilder =
+    apply(rule.info)
 
-  def denyForSafetyInCaseOfError[T](rule: AnyTypedRule[T], ex: Throwable): RuleResult[T, Deny] =
-    RuleResult(rule, Left(ex))
+  def noMatch[V <: RuleVerdict](v: V): RuleResult[V] =
+    forRuleName("No match").succeeded(v)
+
+  class RuleResultBuilder(private val ruleInfo: RuleInfo) {
+
+    def apply[V <: RuleVerdict](
+      verdict: EitherThrow[V],
+      executionTime: Option[FiniteDuration] = None
+    ): RuleResult[V] =
+      new RuleResult(ruleInfo, verdict, executionTime)
+
+    def succeeded[V <: RuleVerdict](
+      v: V,
+      executionTime: Option[FiniteDuration] = None
+    ): RuleResult[V] =
+      apply(Right(v), executionTime)
+
+    def failed[V <: RuleVerdict](
+      ex: Throwable,
+      executionTime: Option[FiniteDuration] = None
+    ): RuleResult[V] =
+      apply(Left(ex), executionTime)
+
+    def allow(executionTime: Option[FiniteDuration] = None): RuleResult[Allow] =
+      succeeded(Allow.withoutReasons, executionTime)
+
+    def denyForSafetyInCaseOfError(
+      ex: Throwable,
+      executionTime: Option[FiniteDuration] = None
+    ): RuleResult[Deny] =
+      apply(Left(ex), executionTime)
+  }
 }
 
 private[erules] trait RuleResultInstances {
 
-  implicit def catsOrderInstanceForRuleRuleResult[T, V <: RuleVerdict](implicit
-    ruleEq: Eq[AnyTypedRule[T]]
-  ): Order[RuleResult[T, V]] =
+  implicit def catsOrderInstanceForRuleRuleResult[V <: RuleVerdict]: Order[RuleResult[V]] =
     Order.from((x, y) =>
       if (
         x != null
         && y != null
-        && ruleEq.eqv(x.rule, y.rule)
+        && x.ruleInfo.equals(y.ruleInfo)
         && x.verdict.equals(y.verdict)
         && x.executionTime.equals(y.executionTime)
       ) 0
