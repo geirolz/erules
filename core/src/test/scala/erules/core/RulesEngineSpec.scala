@@ -5,7 +5,6 @@ import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.Id
 import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.RulesEngine.DuplicatedRulesException
 import erules.core.RuleVerdict.{Allow, Deny}
 import erules.core.testings.ErulesAsyncAssertingSyntax
 import org.scalatest.matchers.should.Matchers
