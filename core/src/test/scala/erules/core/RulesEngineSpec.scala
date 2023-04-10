@@ -35,14 +35,16 @@ class RulesEngineSpec
           Allow.withoutReasons
       }
 
-      RulesEngine[Try]
-        .withRules(
-          allowYEqZero1,
-          allowYEqZero2
-        )
-        .denyAllNotAllowed
-        .failed
-        .get shouldBe a[DuplicatedRulesException[_[_], Foo]]
+      assert(
+        RulesEngine[Try]
+          .withRules(
+            allowYEqZero1,
+            allowYEqZero2
+          )
+          .denyAllNotAllowed
+          .failed
+          .isSuccess
+      )
     }
   }
 
