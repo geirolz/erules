@@ -1,7 +1,7 @@
 package erules.testing.scaltest
 
 import cats.Functor
-import erules.core.{EngineResult, RuleResult, RuleVerdict}
+import erules.{EngineResult, RuleResult, RuleVerdict}
 import org.scalatest.Assertion
 
 trait ErulesAsyncAssertingSyntax {

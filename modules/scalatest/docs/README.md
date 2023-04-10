@@ -8,7 +8,7 @@ Using scalatest we can easily test our engine importing the `erules-scalatest` m
 
 #### Matchers
 ```scala mdoc:nest:to-string
-import erules.core.*
+import erules.*
 import erules.testing.scaltest.*
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -45,7 +45,7 @@ to support cats `IO` monad.
 
 #### Matchers
 ```scala mdoc:nest:to-string
-import erules.core.*
+import erules.*
 import erules.testing.scaltest.*
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers

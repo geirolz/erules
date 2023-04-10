@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import erules.core.RuleVerdict.{Allow, Deny}
+import erules.RuleVerdict.{Allow, Deny}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

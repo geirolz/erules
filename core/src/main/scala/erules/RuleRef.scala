@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
-import cats.kernel.Hash
 import cats.{Eq, Show}
+import cats.kernel.Hash
 
 import java.math.BigInteger
 

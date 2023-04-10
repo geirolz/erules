@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 /** ADT to define the possible responses of the engine evaluation.
   */

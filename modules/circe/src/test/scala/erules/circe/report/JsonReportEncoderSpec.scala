@@ -1,9 +1,8 @@
 package erules.circe.report
 
 import cats.effect.IO
-import cats.Id
-import erules.core.{PureRule, Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
+import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.RuleVerdict.Allow
 import io.circe.Json
 
 class JsonReportEncoderSpec extends munit.CatsEffectSuite {

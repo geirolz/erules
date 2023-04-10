@@ -1,6 +1,6 @@
 package erules.circe
 
-import erules.core.report.ReportEncoder
+import erules.report.ReportEncoder
 import io.circe.Json
 
 package object report {

@@ -1,4 +1,4 @@
-package erules.core
+package erules
 
 import cats.Show
 

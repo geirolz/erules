@@ -1,8 +1,8 @@
-package erules.core.report
+package erules.report
 
 import cats.Show
-import erules.core.*
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.{EngineResult, EvalReason, RuleResult, RuleResultsInterpreterVerdict}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 object StringReportEncoder extends StringReportInstances with StringReportSyntax {
   val defaultHeaderMaxLen: Int       = 60

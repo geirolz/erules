@@ -25,24 +25,25 @@ case class Person(
 ```
 
 Let's write the rules!
+
 ```scala
-import erules.core.Rule
-import erules.core.PureRule
-import erules.core.RuleVerdict.*
+import erules.Rule
+import erules.PureRule
+import erules.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
 val checkCitizenship: PureRule[Citizenship] =
-  Rule("Check UK citizenship"){
+  Rule("Check UK citizenship") {
     case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
+    case _ => Deny.because("Only UK citizenship is allowed!")
   }
 // checkCitizenship: Rule[Id, Citizenship] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$56225/0x00000008094a42d0@7277a96c,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: PureRule[Age] =
-  Rule("Check Age >= 18"){
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+  Rule("Check Age >= 18") {
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _ => Deny.because("Only >= 18 age are allowed!")
   }
 // checkAdultAge: Rule[Id, Age] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$56229/0x00000008094bc2d0@40de50fc,RuleInfo(Check Age >= 18,None,None))
 
@@ -69,7 +70,7 @@ import io.circe.generic.auto.*
 
 And create the JSON report
 ```scala
-import erules.core.*
+import erules.*
 import erules.implicits.*
 import erules.circe.implicits.*
 

@@ -1,9 +1,7 @@
-package erules
-
 import cats.Id
 import cats.effect.IO
 
-package object core {
+package object erules {
   type EitherThrow[+T]    = Either[Throwable, T]
   type PureRule[-T]       = Rule[Id, T]
   type RuleIO[-T]         = Rule[IO, T]

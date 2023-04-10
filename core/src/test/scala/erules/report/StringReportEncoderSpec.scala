@@ -1,10 +1,9 @@
-package erules.core.report
+package erules.report
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.Id
-import erules.core.{PureRule, Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
+import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.RuleVerdict.Allow
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 

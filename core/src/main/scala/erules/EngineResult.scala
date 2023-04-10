@@ -1,6 +1,6 @@
-package erules.core
+package erules
 
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 /** Describes the engine output.
   *

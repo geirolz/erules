@@ -1,6 +1,6 @@
 package erules.testing.scaltest
 
-import erules.core.{RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
+import erules.{RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 import org.scalatest.matchers.{BeMatcher, MatchResult, Matcher}
 
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}

@@ -1,10 +1,10 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
-import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
+import erules.testings.{ErulesAsyncAssertingSyntax, ReportValues}
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers

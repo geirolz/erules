@@ -1,6 +1,6 @@
 package erules.circe.report
 
-import erules.core.*
+import erules.{EngineResult, RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 import io.circe.{Encoder, Json}
 
 object JsonReport extends JsonReportInstances with JsonReportSyntax {

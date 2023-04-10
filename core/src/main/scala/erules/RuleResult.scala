@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
 import cats.Order
-import erules.core.RuleVerdict.*
+import erules.RuleVerdict.*
 
 import scala.concurrent.duration.FiniteDuration
 

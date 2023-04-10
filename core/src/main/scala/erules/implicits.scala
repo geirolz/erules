@@ -1,7 +1,6 @@
 package erules
 
-import erules.core.*
-import erules.core.report.{ReportEncoderInstances, ReportEncoderSyntax, StringReportInstances}
+import erules.report.{ReportEncoderInstances, ReportEncoderSyntax, StringReportInstances}
 
 object implicits extends AllCoreInstances with AllCoreSyntax
 

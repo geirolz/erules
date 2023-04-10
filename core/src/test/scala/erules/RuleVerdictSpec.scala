@@ -1,13 +1,12 @@
-package erules.core
+package erules
 
 import cats.kernel.Monoid
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.EitherValues
 
 class RuleVerdictSpec extends AnyWordSpec with Matchers with EitherValues {
-
-  import RuleVerdict.*
 
   "Monoid for RuleVerdict" should {
 

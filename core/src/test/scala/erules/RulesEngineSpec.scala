@@ -1,12 +1,12 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.Id
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.RuleVerdict.{Allow, Deny}
-import erules.core.testings.ErulesAsyncAssertingSyntax
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleVerdict.{Allow, Deny}
+import erules.testings.ErulesAsyncAssertingSyntax
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 

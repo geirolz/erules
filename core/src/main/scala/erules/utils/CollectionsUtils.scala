@@ -1,4 +1,4 @@
-package erules.core.utils
+package erules.utils
 
 import cats.{Foldable, Order}
 import cats.data.NonEmptyList

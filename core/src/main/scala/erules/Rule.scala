@@ -1,10 +1,10 @@
-package erules.core
+package erules
 
 import cats.{~>, Applicative, ApplicativeThrow, Contravariant, Functor, Id, Order, Show}
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
-import erules.core.RuleVerdict.Ignore
+import erules.RuleVerdict.Ignore
 
 sealed trait Rule[F[_], -T] extends Serializable {
 
@@ -156,7 +156,7 @@ sealed trait Rule[F[_], -T] extends Serializable {
 
 object Rule extends RuleInstances {
 
-  import erules.core.utils.CollectionsUtils.*
+  import utils.CollectionsUtils.*
 
   // =================/ BUILDER /=================
   def apply[T](name: String): RuleBuilder[T] = new RuleBuilder[T](name)

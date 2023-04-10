@@ -1,4 +1,4 @@
-package erules.core
+package erules
 
 import cats.{Applicative, Id, MonadThrow, Parallel}
 import cats.data.NonEmptyList

@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
 import cats.{Monoid, Show}
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 
 import scala.annotation.unused
 

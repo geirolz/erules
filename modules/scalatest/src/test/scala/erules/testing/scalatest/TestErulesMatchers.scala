@@ -2,10 +2,10 @@ package erules.testing.scalatest
 
 import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
-import erules.core.RuleResult
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 import erules.testing.scaltest.ErulesMatchers
+import erules.RuleResult
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
 

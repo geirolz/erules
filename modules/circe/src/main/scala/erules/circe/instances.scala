@@ -1,7 +1,7 @@
 package erules.circe
 
+import erules.*
 import erules.circe.report.{JsonReportInstances, JsonReportSyntax}
-import erules.core.*
 
 object implicits extends CirceAllInstances with CirceAllSyntax
 

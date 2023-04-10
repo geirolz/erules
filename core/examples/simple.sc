@@ -11,8 +11,8 @@ case class Person(
 )
 
 //------------- CREATE RULES -------------//
-import erules.core.Rule
-import erules.core.RuleVerdict._
+import erules.Rule
+import erules.RuleVerdict._
 import cats.data.NonEmptyList
 import cats.Id
 
@@ -36,7 +36,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
 )
 
 //-------------- RULES ENGINE --------------//
-import erules.core.RulesEngine
+import erules.RulesEngine
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
 
@@ -64,8 +64,8 @@ case class Person(
 )
 
 //------------- CREATE RULES -------------//
-import erules.core.Rule
-import erules.core.RuleVerdict._
+import erules.Rule
+import erules.RuleVerdict._
 import cats.data.NonEmptyList
 
 val checkCitizenship: PureRule[Citizenship] =
@@ -90,7 +90,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
 )
 
 //-------------- RULES ENGINE --------------//
-import erules.core.RulesEngine
+import erules.RulesEngine
 import cats.effect.IO
 import cats.effect.unsafe.implicits._
 import erules.implicits._

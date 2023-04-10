@@ -1,4 +1,4 @@
-package erules.core.report
+package erules.report
 
 import cats.{Functor, Show}
 

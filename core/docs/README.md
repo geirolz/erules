@@ -51,23 +51,24 @@ Assuming we want to check:
 - The person has a UK citizenship
 
 Let's write the rules!
+
 ```scala mdoc:to-string
-import erules.core.Rule
-import erules.core.PureRule
-import erules.core.RuleVerdict.*
+import erules.Rule
+import erules.PureRule
+import erules.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
 val checkCitizenship: PureRule[Citizenship] =
-  Rule("Check UK citizenship"){
+  Rule("Check UK citizenship") {
     case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
+    case _ => Deny.because("Only UK citizenship is allowed!")
   }
 
 val checkAdultAge: PureRule[Age] =
-  Rule("Check Age >= 18"){
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+  Rule("Check Age >= 18") {
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _ => Deny.because("Only >= 18 age are allowed!")
   }
 
 val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
@@ -91,7 +92,7 @@ We can evaluate rules in two different ways:
 - allowAllNotDenied
 
 ```scala mdoc:to-string
-import erules.core.*
+import erules.*
 import erules.implicits.*
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*

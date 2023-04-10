@@ -3,7 +3,15 @@ package erules.cats.xml
 import cats.xml.{XmlData, XmlNode}
 import cats.xml.codec.Encoder
 import erules.cats.xml.report.{XmlReportInstances, XmlReportSyntax}
-import erules.core.*
+import erules.{
+  EitherThrow,
+  EngineResult,
+  EvalReason,
+  RuleInfo,
+  RuleResult,
+  RuleResultsInterpreterVerdict,
+  RuleVerdict
+}
 
 import scala.concurrent.duration.FiniteDuration
 

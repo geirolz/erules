@@ -3,8 +3,8 @@ package erules.testing.scalatest
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import erules.core.{EngineResult, RuleResult, RuleVerdict}
-import erules.core.RuleResultsInterpreterVerdict.Allowed
+import erules.{EngineResult, RuleResult, RuleVerdict}
+import erules.RuleResultsInterpreterVerdict.Allowed
 import erules.testing.scaltest.ErulesAsyncAssertingSyntax
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers

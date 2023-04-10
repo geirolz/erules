@@ -1,7 +1,7 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 
 trait RuleResultsInterpreter {
   def interpret(report: NonEmptyList[RuleResult.Unbiased]): RuleResultsInterpreterVerdict

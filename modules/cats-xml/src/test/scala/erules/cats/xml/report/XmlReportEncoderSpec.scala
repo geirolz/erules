@@ -1,11 +1,10 @@
 package erules.cats.xml.report
 
 import cats.effect.IO
-import cats.Id
-import erules.core.{PureRule, Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
 import cats.xml.{Xml, XmlNode}
 import cats.xml.codec.Encoder
+import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.RuleVerdict.Allow
 
 class XmlReportEncoderSpec extends munit.CatsEffectSuite {
 

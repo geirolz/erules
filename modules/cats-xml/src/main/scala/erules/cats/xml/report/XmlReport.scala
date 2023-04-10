@@ -2,7 +2,7 @@ package erules.cats.xml.report
 
 import cats.xml.codec.Encoder
 import cats.xml.Xml
-import erules.core.*
+import erules.{EngineResult, RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 
 object XmlReport extends XmlReportInstances with XmlReportSyntax {
   def fromEncoder[T: Encoder]: XmlReportEncoder[T] =
