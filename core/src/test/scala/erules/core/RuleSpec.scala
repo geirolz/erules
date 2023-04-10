@@ -27,7 +27,7 @@ class RuleSpec
       case class Bar(baz: Baz)
       case class Baz(value: String)
 
-      val bazRule: PureRule[Baz] = Rule("Check Baz value").check[Baz](
+      val bazRule: PureRule[Baz] = Rule("Check Baz value")(
         _.value match {
           case "" => Deny.because("Empty value")
           case _  => Allow.withoutReasons
@@ -51,7 +51,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.pure(Allow.withoutReasons)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -79,7 +79,7 @@ class RuleSpec
 
       val ex = new RuntimeException("BOOM")
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.raiseError(ex)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -150,7 +150,7 @@ class RuleSpec
       case class Foo() extends ADT
       case class Bar() extends ADT
 
-      val rule: PureRule[ADT] = Rule("Check Y value").check[ADT] {
+      val rule: PureRule[ADT] = Rule("Check Y value") {
         case Foo() => Allow.withoutReasons
         case Bar() => Deny.withoutReasons
       }
@@ -176,7 +176,7 @@ class RuleSpec
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -189,7 +189,7 @@ class RuleSpec
     "return the Ignore once evaluated out of the defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -210,7 +210,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: Rule[IO, ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: Rule[IO, ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.pure(Allow.withoutReasons)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -228,7 +228,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.raiseError(new RuntimeException("BOOM"))
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -277,7 +277,7 @@ class RuleSpec
       case class Foo() extends ADT
       case class Bar() extends ADT
 
-      val rule: PureRule[ADT] = Rule("Check Y value").check[ADT] {
+      val rule: PureRule[ADT] = Rule("Check Y value") {
         case Foo() => Allow.withoutReasons
         case Bar() => Deny.withoutReasons
       }
@@ -292,7 +292,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -303,7 +303,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -318,10 +318,10 @@ class RuleSpec
 
       val duplicated: List[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check Y value").partially[Foo] { case Foo(_, 1) =>
+          Rule("Check Y value").partially { case Foo(_, 1) =>
             Allow.withoutReasons
           }
         )
@@ -335,10 +335,10 @@ class RuleSpec
 
       val duplicated: Seq[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check X value").partially[Foo] { case Foo("Foo", _) =>
+          Rule("Check X value").partially { case Foo("Foo", _) =>
             Allow.withoutReasons
           }
         )

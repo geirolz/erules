@@ -72,7 +72,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed[EitherThrow, Foo](ex)
+      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed(ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(
@@ -150,7 +150,7 @@ class RuleResultsInterpreterSpec extends AnyWordSpec with Matchers with EitherVa
 
       val ex = new RuntimeException("BOOM")
 
-      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed[EitherThrow, Foo](ex)
+      val allowAll: Rule[EitherThrow, Foo] = Rule("Allow all").failed(ex)
 
       val result = interpreter.interpret(
         NonEmptyList.one(

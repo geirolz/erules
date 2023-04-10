@@ -159,46 +159,25 @@ object Rule extends RuleInstances {
   import erules.core.utils.CollectionsUtils.*
 
   // =================/ BUILDER /=================
-  def apply(name: String): RuleBuilder = new RuleBuilder(name)
+  def apply[T](name: String): RuleBuilder[T] = new RuleBuilder[T](name)
 
-  class RuleBuilder private[erules] (name: String) { $this =>
+  class RuleBuilder[T] private[erules] (name: String) { $this =>
 
-    def apply[F[_], T](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
-      check(f)
+    def apply[F[_]](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+      RuleImpl(f, RuleInfo($this.name))
 
-    def check[F[_], T](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
-      RuleImpl(
-        f    = f,
-        info = RuleInfo($this.name)
-      )
+    @deprecated("Use `apply` instead", "0.1.0")
+    def check[F[_]](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+      apply(f)
 
-    def partially[F[_]: Applicative, T](
-      f: PartialFunction[T, F[RuleVerdict]]
-    ): Rule[F, T] =
-      apply(
-        f.lift.andThen(_.getOrElse(Applicative[F].pure(Ignore.noMatch)))
-      )
+    def partially[F[_]: Applicative](f: PartialFunction[T, F[RuleVerdict]]): Rule[F, T] =
+      apply(f.lift.andThen(_.getOrElse(Applicative[F].pure(Ignore.noMatch))))
 
-    def failed[F[_]: ApplicativeThrow, T](ex: Throwable): Rule[F, T] =
+    def failed[F[_]: ApplicativeThrow](ex: Throwable): Rule[F, T] =
       apply(_ => ApplicativeThrow[F].raiseError(ex))
 
-    def const[F[_]: Applicative, T](v: RuleVerdict): Rule[F, T] =
+    def const[F[_]: Applicative](v: RuleVerdict): Rule[F, T] =
       apply(_ => Applicative[F].pure(v))
-
-    // =================/ Pure /=================
-    def apply[T](f: Function[T, RuleVerdict])(implicit dummyImplicit: DummyImplicit): PureRule[T] =
-      apply[Id, T](f)
-
-    def check[T](f: Function[T, RuleVerdict])(implicit dummyImplicit: DummyImplicit): PureRule[T] =
-      check[Id, T](f)
-
-    def partially[T](f: PartialFunction[T, RuleVerdict])(implicit
-      dummyImplicit: DummyImplicit
-    ): PureRule[T] =
-      partially[Id, T](f)
-
-    def const[T](v: RuleVerdict)(implicit dummyImplicit: DummyImplicit): PureRule[T] =
-      const[Id, T](v)
   }
 
   private[erules] case class RuleImpl[F[_], -TT](

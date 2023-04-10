@@ -17,8 +17,8 @@ private[generic] trait RuleMacros {
       *   case class Bar(test: Test)
       *   case class Test(value: Int)
       *
-      *   val rule: Rule[Int]    = Rule("RULE").const(RuleVerdict.Ignore.withoutReasons)
-      *   val fooRule: Rule[Foo] = rule.contramapTarget[Foo](_.bar.test.value)
+      *   val rule: Rule[F, Int]    = Rule("RULE").const(RuleVerdict.Ignore.withoutReasons)
+      *   val fooRule: Rule[F, Foo] = rule.contramapTarget[Foo](_.bar.test.value)
       *
       *   fooRule.targetInfo
       *   scala> val res0: Option[String] = Some(bar.test.value)

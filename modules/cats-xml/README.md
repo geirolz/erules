@@ -27,25 +27,26 @@ case class Person(
 Let's write the rules!
 ```scala
 import erules.core.Rule
+import erules.core.PureRule
 import erules.core.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] =
-  Rule("Check UK citizenship").apply[Id, Citizenship]{
+val checkCitizenship: PureRule[Citizenship] =
+  Rule("Check UK citizenship"){
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
+// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$58763/0x0000000809b592d0@3abe2df3,RuleInfo(Check UK citizenship,None,None))
 
-val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age] {
+val checkAdultAge: PureRule[Age] =
+  Rule("Check Age >= 18"){
     case a: Age if a.value >= 18  => Allow.withoutReasons
     case _                        => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
+// checkAdultAge: Rule[Id, Age] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$58767/0x0000000809b782d0@f27dc91,RuleInfo(Check Age >= 18,None,None))
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -53,8 +54,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@434a6b0a,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11365/0x0000000802923a00@1c4a6867,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@410457fe,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@75c24ca8,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import
@@ -104,7 +104,7 @@ val result: IO[EngineResult[Person]]  = for {
 
 //yolo
 result.unsafeRunSync().asXmlReport
-// res0: cats.xml.Xml = <EngineResult>
+// res0: Xml = <EngineResult>
 //  <Data>
 //   <Person name="Mimmo" lastName="Rossi" age="16">
 //    <Citizenship country="IT"/>
@@ -126,7 +126,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="84708" unit="NANOSECONDS"/>
+//      <Duration length="96000" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //    <RuleResult>
@@ -139,7 +139,7 @@ result.unsafeRunSync().asXmlReport
 //      </Reasons>
 //     </Verdict>
 //     <ExecutionTime>
-//      <Duration length="8000" unit="NANOSECONDS"/>
+//      <Duration length="9125" unit="NANOSECONDS"/>
 //     </ExecutionTime>
 //    </RuleResult>
 //   </EvaluatedRules>

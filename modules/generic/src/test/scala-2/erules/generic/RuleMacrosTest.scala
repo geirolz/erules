@@ -1,6 +1,5 @@
 package erules.generic
 
-import cats.Id
 import erules.core.{PureRule, Rule, RuleVerdict}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -15,7 +14,7 @@ class RuleMacrosTest extends AnyFunSuite with Matchers {
     case class Bar(test: Test)
     case class Test(value: Int)
 
-    val rule: PureRule[Int]    = Rule("RULE").const[Id, Int](RuleVerdict.Ignore.withoutReasons)
+    val rule: PureRule[Int]    = Rule("RULE").const(RuleVerdict.Ignore.withoutReasons)
     val fooRule: PureRule[Foo] = rule.contramapTarget[Foo](_.bar.test.value)
 
     fooRule.targetInfo shouldBe Some("bar.test.value")

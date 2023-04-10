@@ -3,7 +3,7 @@ package erules.core.report
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.Id
-import erules.core.{Rule, RulesEngine, RulesEngineIO}
+import erules.core.{PureRule, Rule, RulesEngine, RulesEngineIO}
 import erules.core.RuleVerdict.Allow
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -18,7 +18,7 @@ class StringReportEncoderSpec extends AsyncWordSpec with AsyncIOSpec with Matche
 
       case class Foo(x: String, y: Int)
 
-      val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 

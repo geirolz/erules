@@ -2,7 +2,7 @@ package erules.cats.xml.report
 
 import cats.effect.IO
 import cats.Id
-import erules.core.{Rule, RulesEngine, RulesEngineIO}
+import erules.core.{PureRule, Rule, RulesEngine, RulesEngineIO}
 import erules.core.RuleVerdict.Allow
 import cats.xml.{Xml, XmlNode}
 import cats.xml.codec.Encoder
@@ -25,7 +25,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
       )
     }
 
-    val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
       Allow.because("because yes!")
     }
 

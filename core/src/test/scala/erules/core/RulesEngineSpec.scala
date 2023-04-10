@@ -24,14 +24,12 @@ class RulesEngineSpec
   "RulesEngine" should {
     "Return a DuplicatedRulesException with duplicated rules" in {
 
-      val allowYEqZero1: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] {
-        case Foo(_, 0) =>
-          Allow.withoutReasons
+      val allowYEqZero1: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+        Allow.withoutReasons
       }
 
-      val allowYEqZero2: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] {
-        case Foo(_, 0) =>
-          Allow.withoutReasons
+      val allowYEqZero2: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+        Allow.withoutReasons
       }
 
       assert(
@@ -52,7 +50,7 @@ class RulesEngineSpec
 
     "Respond with DENIED when there are no rules for the target" in {
 
-      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -77,11 +75,11 @@ class RulesEngineSpec
 
     "Respond with DENIED when a rule Deny the target" in {
 
-      val denyXEqTest: PureRule[Foo] = Rule("Check X value").partially[Id, Foo] {
-        case Foo("TEST", _) => Deny.withoutReasons
+      val denyXEqTest: PureRule[Foo] = Rule("Check X value").partially { case Foo("TEST", _) =>
+        Deny.withoutReasons
       }
 
-      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -112,7 +110,7 @@ class RulesEngineSpec
 
     "Respond with ALLOWED when a ALL rules allow the target" in {
 
-      val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -143,9 +141,9 @@ class RulesEngineSpec
       val ex1 = new RuntimeException("BOOM")
       val ex2 = new RuntimeException("PUFF")
 
-      val allow1: RuleIO[Foo]  = Rule("ALLOW").const[IO, Foo](Allow.withoutReasons)
-      val failed1: RuleIO[Foo] = Rule("BOOM").failed[IO, Foo](ex1)
-      val failed2: RuleIO[Foo] = Rule("PUFF").failed[IO, Foo](ex2)
+      val allow1: RuleIO[Foo]  = Rule("ALLOW").const(Allow.withoutReasons)
+      val failed1: RuleIO[Foo] = Rule("BOOM").failed(ex1)
+      val failed2: RuleIO[Foo] = Rule("PUFF").failed(ex2)
 
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
@@ -173,7 +171,7 @@ class RulesEngineSpec
 
     "Respond with ALLOWED when there are no rules for the target" in {
 
-      val denyYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val denyYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Deny.withoutReasons
       }
 
@@ -198,12 +196,11 @@ class RulesEngineSpec
 
     "Respond with DENIED when a rule Deny the target" in {
 
-      val denyXEqTest: Rule[Id, Foo] = Rule("Check X value").partially[Id, Foo] {
-        case Foo("TEST", _) =>
-          Deny.withoutReasons
+      val denyXEqTest: PureRule[Foo] = Rule("Check X value").partially { case Foo("TEST", _) =>
+        Deny.withoutReasons
       }
 
-      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
@@ -231,7 +228,7 @@ class RulesEngineSpec
 
     "Respond with ALLOWED when a ALL rules allow the target" in {
 
-      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 

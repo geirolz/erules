@@ -16,18 +16,17 @@ import erules.core.RuleVerdict._
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] = Rule("Check UK citizenship").apply[Id, Citizenship] {
+val checkCitizenship: PureRule[Citizenship] = Rule("Check UK citizenship") {
   case Citizenship(Country("UK")) => Allow.withoutReasons
   case _                          => Deny.because("Only UK citizenship is allowed!")
 }
 
-val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age] {
+val checkAdultAge: PureRule[Age] = Rule("Check Age >= 18") {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -69,19 +68,19 @@ import erules.core.Rule
 import erules.core.RuleVerdict._
 import cats.data.NonEmptyList
 
-val checkCitizenship: Rule[Id, Citizenship] =
+val checkCitizenship: PureRule[Citizenship] =
   Rule("Check UK citizenship")[Id, Citizenship] {
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _                          => Deny.because("Only UK citizenship is allowed!")
   }
 
-val checkAdultAge: Rule[Id, Age] =
+val checkAdultAge: PureRule[Age] =
   Rule("Check Age >= 18")[Id, Age] {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _                       => Deny.because("Only >= 18 age are allowed!")
   }
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("person.citizenship")
     .contramap(_.citizenship),
