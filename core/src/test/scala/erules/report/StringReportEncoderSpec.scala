@@ -24,7 +24,7 @@ class StringReportEncoderSpec extends AsyncWordSpec with AsyncIOSpec with Matche
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
           .withRules(allowYEqZero)
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[String] =
         engine

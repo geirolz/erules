@@ -31,7 +31,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
     val engine: IO[RulesEngineIO[Foo]] =
       RulesEngine[IO]
         .withRules(allowYEqZero)
-        .denyAllNotAllowed
+        .denyAllNotAllowed[IO]
 
     val result: IO[Xml] =
       engine

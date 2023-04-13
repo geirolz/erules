@@ -3,7 +3,6 @@ package erules
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.Id
 import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 import erules.RuleVerdict.{Allow, Deny}
 import erules.testings.ErulesAsyncAssertingSyntax
@@ -33,12 +32,12 @@ class RulesEngineSpec
       }
 
       assert(
-        RulesEngine[Try]
+        RulesEngine.pure
           .withRules(
             allowYEqZero1,
             allowYEqZero2
           )
-          .denyAllNotAllowed
+          .denyAllNotAllowed[Try]
           .failed
           .isSuccess
       )
@@ -57,7 +56,7 @@ class RulesEngineSpec
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
           .withRules(allowYEqZero)
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
@@ -89,7 +88,7 @@ class RulesEngineSpec
             denyXEqTest,
             allowYEqZero
           )
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
@@ -117,7 +116,7 @@ class RulesEngineSpec
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
           .withRules(allowYEqZero)
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
@@ -152,7 +151,7 @@ class RulesEngineSpec
             failed1,
             failed2
           )
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
@@ -178,7 +177,7 @@ class RulesEngineSpec
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
           .withRules(denyYEqZero)
-          .allowAllNotDenied
+          .allowAllNotDenied[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
 
@@ -206,11 +205,11 @@ class RulesEngineSpec
 
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
-          .withRules[Id, Foo](
+          .withRules(
             denyXEqTest,
             allowYEqZero
           )
-          .allowAllNotDenied
+          .allowAllNotDenied[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 
@@ -235,7 +234,7 @@ class RulesEngineSpec
       val engine: IO[RulesEngineIO[Foo]] =
         RulesEngine[IO]
           .withRules(allowYEqZero)
-          .allowAllNotDenied
+          .allowAllNotDenied[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
 

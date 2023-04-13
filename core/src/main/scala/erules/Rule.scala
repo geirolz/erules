@@ -5,6 +5,7 @@ import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
 import erules.RuleVerdict.Ignore
+import erules.utils.IsId
 
 sealed trait Rule[F[_], -T] extends Serializable {
 
@@ -114,7 +115,7 @@ sealed trait Rule[F[_], -T] extends Serializable {
     * @return
     *   A lifted rule to specified effect type `G`
     */
-  def covary[G[_]: Applicative](implicit env: F[RuleVerdict] <:< RuleVerdict): Rule[G, T]
+  def covary[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, T]
 
   /** Lift a rule with effect `F[_]` to specified `G[_]`. Value is lifted using specified
     * `FunctionK` instance
@@ -131,6 +132,16 @@ sealed trait Rule[F[_], -T] extends Serializable {
   /** Same as `eval` but has only the `RuleVerdict` value
     */
   def evalRaw[TT <: T](data: TT): F[RuleVerdict]
+
+  /** Same as `eval` return a pure `RuleVerdict` value without side effects.
+    *
+    * `executionTime` is always set to `None`
+    */
+  def pureEval[TT <: T](data: TT)(implicit F: IsId[F]): RuleResult.Unbiased =
+    RuleResult.forRule(this)(
+      verdict       = Right(F.unliftId(evalRaw[TT](data))),
+      executionTime = None
+    )
 
   /** Eval this rules. The evaluations result is stored into a 'Either[Throwable, T]', so the
     * `ApplicativeError` doesn't raise error in case of failed rule evaluation
@@ -157,27 +168,29 @@ sealed trait Rule[F[_], -T] extends Serializable {
 object Rule extends RuleInstances {
 
   import utils.CollectionsUtils.*
+  import IsId.*
 
   // =================/ BUILDER /=================
-  def apply[T](name: String): RuleBuilder[T] = new RuleBuilder[T](name)
+  def apply[F[_], T](name: String): RuleBuilder[F, T] = new RuleBuilder[F, T](name)
+  def pure[T](name: String): RuleBuilder[Id, T]       = apply[Id, T](name)
 
-  class RuleBuilder[T] private[erules] (name: String) { $this =>
+  class RuleBuilder[F[_], T] private[erules] (name: String) { $this =>
 
-    def apply[F[_]](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+    def apply(f: Function[T, F[RuleVerdict]]): Rule[F, T] =
       RuleImpl(f, RuleInfo($this.name))
 
     @deprecated("Use `apply` instead", "0.1.0")
-    def check[F[_]](f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+    def check(f: Function[T, F[RuleVerdict]]): Rule[F, T] =
       apply(f)
 
-    def partially[F[_]: Applicative](f: PartialFunction[T, F[RuleVerdict]]): Rule[F, T] =
-      apply(f.lift.andThen(_.getOrElse(Applicative[F].pure(Ignore.noMatch))))
+    def partially(f: PartialFunction[T, F[RuleVerdict]])(implicit F: Applicative[F]): Rule[F, T] =
+      apply(f.lift.andThen(_.getOrElse(F.pure(Ignore.noMatch))))
 
-    def failed[F[_]: ApplicativeThrow](ex: Throwable): Rule[F, T] =
-      apply(_ => ApplicativeThrow[F].raiseError(ex))
+    def failed(ex: Throwable)(implicit F: ApplicativeThrow[F]): Rule[F, T] =
+      apply(_ => F.raiseError(ex))
 
-    def const[F[_]: Applicative](v: RuleVerdict): Rule[F, T] =
-      apply(_ => Applicative[F].pure(v))
+    def const(v: RuleVerdict)(implicit F: Applicative[F]): Rule[F, T] =
+      apply(_ => F.pure(v))
   }
 
   private[erules] case class RuleImpl[F[_], -TT](
@@ -200,10 +213,8 @@ object Rule extends RuleInstances {
     override def evalRaw[TT2 <: TT](data: TT2): F[RuleVerdict] =
       f(data)
 
-    override def covary[G[_]: Applicative](implicit
-      env: F[RuleVerdict] <:< RuleVerdict
-    ): Rule[G, TT] =
-      copy[G, TT](f = f.andThen(fa => Applicative[G].pure(env(fa))))
+    override def covary[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, TT] =
+      copy[G, TT](f = f.andThen(fa => Applicative[G].pure(fa)))
 
     override def mapK[G[_]](f: F ~> G): Rule[G, TT] =
       copy[G, TT](f = this.f.andThen(f.apply))
@@ -234,7 +245,7 @@ private[erules] trait RuleInstances {
   implicit def catsShowInstanceForRule[F[_], T]: Show[Rule[F, T]] =
     r => s"Rule('${r.fullDescription}')"
 
-  implicit class PureRuleOps[F[_]: Functor, I[X] <: Id[X], T](fa: F[Rule[I, T]]) {
+  implicit class PureRuleOps[F[_]: Functor, I[_]: IsId, T](fa: F[Rule[I, T]]) {
     def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
   }
 }
