@@ -20,7 +20,7 @@ object ReportEncoder extends ReportEncoderInstances with ReportEncoderSyntax {
     (t: T) => f(t)
 }
 
-private[erules] trait ReportEncoderInstances {
+private[erules] trait ReportEncoderInstances extends StringReportInstances {
   implicit def reportEncoderFunctor[T]: Functor[ReportEncoder[T, *]] =
     new Functor[ReportEncoder[T, *]] {
       override def map[A, B](fa: ReportEncoder[T, A])(f: A => B): ReportEncoder[T, B] = fa.map(f)

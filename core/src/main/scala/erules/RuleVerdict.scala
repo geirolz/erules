@@ -7,7 +7,7 @@ import scala.annotation.unused
 
 /** ADT to define the possible output of a [[Rule]] evaluation.
   */
-sealed trait RuleVerdict extends Serializable { this: RuleVerdictBecauseSupport[RuleVerdict] =>
+sealed trait RuleVerdict extends Serializable with RuleVerdictBecauseSupport[RuleVerdict] {
 
   /** Result reasons
     */
@@ -59,11 +59,27 @@ object RuleVerdict extends RuleVerdictInstances {
   // noinspection ScalaWeakerAccess
   val noReasons: List[EvalReason] = Nil
 
+  // TODO: add test
+  def whenNot(b: Boolean)(ifTrue: => RuleVerdict, ifFalse: => RuleVerdict): RuleVerdict =
+    when(!b)(ifFalse, ifTrue)
+
+  // TODO: add test
+  def when(b: Boolean)(ifTrue: => RuleVerdict, ifFalse: => RuleVerdict): RuleVerdict =
+    if (b) ifTrue else ifFalse
+
   // ------------------------------ ALLOW ------------------------------
   sealed trait Allow extends RuleVerdict with RuleVerdictBecauseSupport[Allow]
   object Allow extends RuleVerdictBecauseSupport[Allow] {
 
     val allNotExplicitlyDenied: Allow = Allow.because("Allow All Not Explicitly Denied")
+
+    // TODO: add test
+    def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =
+      RuleVerdict.when(b)(Allow.withoutReasons, ifFalse)
+
+    // TODO: add test
+    def whenNot(b: Boolean)(ifTrue: => RuleVerdict): RuleVerdict =
+      RuleVerdict.whenNot(b)(ifTrue, Allow.withoutReasons)
 
     /** Create a [[Allow]] result with the specified reasons
       */
@@ -93,6 +109,14 @@ object RuleVerdict extends RuleVerdictInstances {
 
     val allNotExplicitlyAllowed: Deny = Deny.because("Deny All Not Explicitly Allowed")
 
+    // TODO: add test
+    def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =
+      RuleVerdict.when(b)(Deny.withoutReasons, ifFalse)
+
+    // TODO: add test
+    def whenNot(b: Boolean)(ifTrue: => RuleVerdict): RuleVerdict =
+      RuleVerdict.whenNot(b)(ifTrue, Deny.withoutReasons)
+
     /** Create a [[Deny]] result with the specified reasons
       */
     override def because(newReasons: List[EvalReason]): Deny = DenyImpl(newReasons)
@@ -120,6 +144,14 @@ object RuleVerdict extends RuleVerdictInstances {
   object Ignore extends RuleVerdictBecauseSupport[Ignore] {
 
     val noMatch: Ignore = Ignore.because("No match")
+
+    // TODO: add test
+    def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =
+      RuleVerdict.when(b)(Ignore.withoutReasons, ifFalse)
+
+    // TODO: add test
+    def whenNot(b: Boolean)(ifTrue: => RuleVerdict): RuleVerdict =
+      RuleVerdict.whenNot(b)(ifTrue, Ignore.withoutReasons)
 
     /** Create a [[Ignore]] result with the specified reasons
       */

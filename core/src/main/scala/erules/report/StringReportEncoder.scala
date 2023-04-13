@@ -1,6 +1,7 @@
 package erules.report
 
 import cats.Show
+import cats.effect.std.Console
 import erules.{EngineResult, EvalReason, RuleResult, RuleResultsInterpreterVerdict}
 import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
@@ -101,6 +102,10 @@ private[erules] trait StringReportInstances {
 
 private[erules] trait StringReportSyntax {
   implicit class StringReportEncoderForAny[T](t: T) {
-    def asStringReport(implicit re: StringReportEncoder[T]): String = re.report(t)
+    def asStringReport(implicit re: StringReportEncoder[T]): String =
+      re.report(t)
+
+    def printStringReport[F[_]: Console](implicit re: StringReportEncoder[T]): F[Unit] =
+      Console[F].println(asStringReport)
   }
 }

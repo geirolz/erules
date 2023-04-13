@@ -43,8 +43,8 @@ class RuleSpec
     }
   }
 
-  // ------------------------- EVAL ZIP -------------------------
-  "Rule.check.eval" should {
+  // ------------------------- EVAL -------------------------
+  "Rule.apply.eval" should {
     "return the right result once evaluated" in {
 
       sealed trait ADT
@@ -97,54 +97,7 @@ class RuleSpec
           )
       } yield ()
     }
-  }
 
-  "Rule.checkOrIgnore.eval" should {
-    "return the right result once evaluated" in {
-      case class Foo(@unused x: String, @unused y: Int)
-
-      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
-        case Foo(_, 0) => IO.pure(Allow.withoutReasons)
-        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
-      }
-
-      for {
-        _ <- rule
-          .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(
-            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
-          )
-        _ <- rule
-          .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(
-            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
-          )
-      } yield ()
-    }
-
-    "return an exception when a case fail" in {
-      case class Foo(@unused x: String, @unused y: Int)
-      val ex = new RuntimeException("BOOM")
-
-      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
-        case Foo(_, 0) => IO.raiseError(ex)
-        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
-      }
-
-      for {
-        _ <- rule
-          .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
-        _ <- rule
-          .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(
-            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
-          )
-      } yield ()
-    }
-  }
-
-  "Rule.check.eval" should {
     "return the right result once evaluated when exhaustive" in {
       sealed trait ADT
       case class Foo() extends ADT
@@ -170,9 +123,53 @@ class RuleSpec
           )
       } yield ()
     }
+
   }
 
-  "Rule.checkOrIgnore.eval" should {
+  "Rule.partially.eval" should {
+    "return the right result once evaluated" in {
+      case class Foo(@unused x: String, @unused y: Int)
+
+      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
+        case Foo(_, 0) => IO.pure(Allow.withoutReasons)
+        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
+      }
+
+      for {
+        _ <- rule
+          .eval(Foo("TEST", 0))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
+        _ <- rule
+          .eval(Foo("TEST", 1))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
+      } yield ()
+    }
+
+    "return an exception when a case fail" in {
+      case class Foo(@unused x: String, @unused y: Int)
+      val ex = new RuntimeException("BOOM")
+
+      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
+        case Foo(_, 0) => IO.raiseError(ex)
+        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
+      }
+
+      for {
+        _ <- rule
+          .eval(Foo("TEST", 0))
+          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
+        _ <- rule
+          .eval(Foo("TEST", 1))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
+      } yield ()
+    }
+
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
@@ -202,8 +199,50 @@ class RuleSpec
     }
   }
 
+  "Rule.assert*" should {
+
+    "assert" in {
+      Rule
+        .pure[String]("Non Empty String")
+        .assert("String must be non empty")(_.nonEmpty)
+        .pureEval("NON_EMPTY_STRING")
+        .verdict shouldBe Right(Allow.withoutReasons)
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assert("String must be non empty")(_.nonEmpty)
+        .pureEval("")
+        .verdict shouldBe Right(Deny.because("String must be non empty"))
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assert(_.nonEmpty)
+        .pureEval("")
+        .verdict shouldBe Right(Deny.withoutReasons)
+    }
+
+    "assertNot" in {
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot("String must be non empty")(_.isEmpty)
+        .pureEval("NON_EMPTY_STRING")
+        .verdict shouldBe Right(Allow.withoutReasons)
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot("String must be non empty")(_.isEmpty)
+        .pureEval("")
+        .verdict shouldBe Right(Deny.because("String must be non empty"))
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot(_.isEmpty)
+        .pureEval("")
+        .verdict shouldBe Right(Deny.withoutReasons)
+    }
+  }
   // ------------------------- EVAL RAW -------------------------
-  "Rule.check.evalRaw" should {
+  "Rule.apply.evalRaw" should {
     "return the right result once evaluated" in {
 
       sealed trait ADT
@@ -239,9 +278,23 @@ class RuleSpec
         _ <- rule.evalRaw(Bar("TEST", 1)).asserting(_ shouldBe RuleVerdict.Deny.withoutReasons)
       } yield ()
     }
+
+    "return the right result once evaluated when exhaustive" in {
+      sealed trait ADT
+      case class Foo() extends ADT
+      case class Bar() extends ADT
+
+      val rule: PureRule[ADT] = Rule("Check Y value") {
+        case Foo() => Allow.withoutReasons
+        case Bar() => Deny.withoutReasons
+      }
+
+      rule.evalRaw(Foo()) shouldBe RuleVerdict.Allow.withoutReasons
+      rule.evalRaw(Bar()) shouldBe RuleVerdict.Deny.withoutReasons
+    }
   }
 
-  "Rule.checkOrIgnore.evalRaw" should {
+  "Rule.partially.evalRaw" should {
     "return the right result once evaluated" in {
       case class Foo(@unused x: String, @unused y: Int)
 
@@ -269,25 +322,7 @@ class RuleSpec
         _ <- rule.evalRaw(Foo("TEST", 1)).asserting(_ shouldBe RuleVerdict.Deny.withoutReasons)
       } yield ()
     }
-  }
 
-  "Rule.check.evalRaw" should {
-    "return the right result once evaluated when exhaustive" in {
-      sealed trait ADT
-      case class Foo() extends ADT
-      case class Bar() extends ADT
-
-      val rule: PureRule[ADT] = Rule("Check Y value") {
-        case Foo() => Allow.withoutReasons
-        case Bar() => Deny.withoutReasons
-      }
-
-      rule.evalRaw(Foo()) shouldBe RuleVerdict.Allow.withoutReasons
-      rule.evalRaw(Bar()) shouldBe RuleVerdict.Deny.withoutReasons
-    }
-  }
-
-  "Rule.checkOrIgnore.evalRaw" should {
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 

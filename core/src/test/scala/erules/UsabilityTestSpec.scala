@@ -3,6 +3,7 @@ package erules
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
+import cats.Id
 import erules.testings.*
 import erules.RuleVerdict.{Allow, Deny}
 import org.scalatest.matchers.should.Matchers
@@ -14,6 +15,8 @@ class UsabilityTestSpec
     with Matchers
     with ErulesAsyncAssertingSyntax {
 
+  import erules.report.ReportEncoder.*
+
   "This library" should {
     "be functional and with a nice syntax" in {
 
@@ -23,14 +26,16 @@ class UsabilityTestSpec
           case _                                       => Deny.because("Ship to not to Italy")
         },
         Rule("BillTo UK order only") {
-          case Order(_, _, BillTo(_, Country.`UK`), _) => Allow.withoutReasons
+          case Order(_, _, BillTo(_, Country.`UK`), _) => Allow.because(EvalReason("Bill to UK"))
           case _                                       => Deny.because("Bill to not from UK")
         },
-        Rule
-          .pure[BigDecimal]("Prince under 5k") {
-            case x if x.toInt < 5000 => Allow.withoutReasons
-            case _                   => Deny.because("Bill to not from UK")
-          }
+        Rule[Id, BigDecimal]("Prince under 5k")
+          .assert("Be under 5k")(_.toInt < 5000)
+          .targetInfo("Total price")
+          .contramap(_.items.map(_.price).sum),
+        Rule[Id, BigDecimal]("Prince under 5k")
+          .apply(o => Allow.when(o.toInt < 5000)(Deny.because("Be under 5k")))
+          .targetInfo("Total price")
           .contramap(_.items.map(_.price).sum)
       )
 
@@ -39,7 +44,7 @@ class UsabilityTestSpec
           .withRules(returnRules)
           .denyAllNotAllowed[IO]
 
-      engine
+      val result: IO[RuleResultsInterpreterVerdict] = engine
         .map(
           _.pureSeqEval(
             Order(
@@ -50,7 +55,10 @@ class UsabilityTestSpec
             )
           )
         )
-        .asserting(_.verdict.isAllowed shouldBe false)
+        .flatTap(_.printStringReport[IO])
+        .map(_.verdict)
+
+      result.asserting(_.isAllowed shouldBe false)
     }
   }
 }

@@ -4,7 +4,7 @@ import cats.{~>, Applicative, ApplicativeThrow, Contravariant, Functor, Id, Orde
 import cats.data.NonEmptyList
 import cats.effect.Clock
 import cats.implicits.*
-import erules.RuleVerdict.Ignore
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 import erules.utils.IsId
 
 sealed trait Rule[F[_], -T] extends Serializable {
@@ -179,10 +179,6 @@ object Rule extends RuleInstances {
     def apply(f: Function[T, F[RuleVerdict]]): Rule[F, T] =
       RuleImpl(f, RuleInfo($this.name))
 
-    @deprecated("Use `apply` instead", "0.1.0")
-    def check(f: Function[T, F[RuleVerdict]]): Rule[F, T] =
-      apply(f)
-
     def partially(f: PartialFunction[T, F[RuleVerdict]])(implicit F: Applicative[F]): Rule[F, T] =
       apply(f.lift.andThen(_.getOrElse(F.pure(Ignore.noMatch))))
 
@@ -191,6 +187,36 @@ object Rule extends RuleInstances {
 
     def const(v: RuleVerdict)(implicit F: Applicative[F]): Rule[F, T] =
       apply(_ => F.pure(v))
+
+    // assertions
+    def assert(f: Function[T, F[Boolean]])(implicit
+      F: Applicative[F]
+    ): Rule[F, T] =
+      fromBooleanF(f)(
+        ifTrue  = Allow.withoutReasons,
+        ifFalse = Deny.withoutReasons
+      )
+
+    def assert(ifFalse: String)(f: Function[T, F[Boolean]])(implicit
+      F: Applicative[F]
+    ): Rule[F, T] =
+      fromBooleanF(f)(
+        ifTrue  = Allow.withoutReasons,
+        ifFalse = Deny.because(ifFalse)
+      )
+
+    def assertNot(f: Function[T, F[Boolean]])(implicit F: Applicative[F]): Rule[F, T] =
+      assert(f.andThen(_.map(!_)))
+
+    def assertNot(ifTrue: String)(f: Function[T, F[Boolean]])(implicit
+      F: Applicative[F]
+    ): Rule[F, T] = assert(ifTrue)(f.andThen(_.map(!_)))
+
+    def fromBooleanF(
+      f: Function[T, F[Boolean]]
+    )(ifTrue: => RuleVerdict, ifFalse: => RuleVerdict)(implicit
+      F: Applicative[F]
+    ): Rule[F, T] = apply(f.andThen(_.ifF(ifTrue, ifFalse)))
   }
 
   private[erules] case class RuleImpl[F[_], -TT](

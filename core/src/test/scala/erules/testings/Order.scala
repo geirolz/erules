@@ -1,11 +1,16 @@
 package erules.testings
 
+import cats.Show
+
 case class Order(
   id: String,
   shipTo: ShipTo,
   billTo: BillTo,
   items: List[Item]
 )
+object Order {
+  implicit val show: Show[Order] = Show.fromToString
+}
 
 case class ShipTo(
   address: String,
