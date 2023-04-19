@@ -38,14 +38,14 @@ val checkCitizenship: PureRule[Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _ => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$58763/0x0000000809b592d0@3abe2df3,RuleInfo(Check UK citizenship,None,None))
+// checkCitizenship: PureRule[Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: PureRule[Age] =
   Rule("Check Age >= 18") {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _ => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$58767/0x0000000809b782d0@f27dc91,RuleInfo(Check Age >= 18,None,None))
+// checkAdultAge: PureRule[Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
 val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@410457fe,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@75c24ca8,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@64e6f1cd,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@30142743,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import
@@ -68,6 +68,7 @@ Define the `Person` encoder
 import cats.xml.codec.Encoder
 import cats.xml.XmlNode
 import cats.xml.implicits.*
+import scala.util.Try
 
 implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
   XmlNode("Person")
@@ -91,21 +92,19 @@ import erules.*
 import erules.implicits.*
 import erules.cats.xml.implicits.*
 
-import cats.effect.IO
-import cats.effect.unsafe.implicits.*
-
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 // person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
-// result: IO[EngineResult[Person]] = IO(...)
+val result: Try[EngineResult[Person]]  =
+  RulesEngine
+    .withRules(allPersonRules)
+    .denyAllNotAllowed[Try]
+    .map(_.seqEvalPure(person))
+// result: Try[EngineResult[Person]] = Success(EngineResult(Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT))),Denied(NonEmptyList(RuleResult(RuleInfo(Check UK citizenship,None,Some(citizenship)),Right(DenyImpl(List(EvalReason(Only UK citizenship is allowed!)))),None), RuleResult(RuleInfo(Check Age >= 18,None,Some(age)),Right(DenyImpl(List(EvalReason(Only >= 18 age are allowed!)))),None)))))
 
 //yolo
-result.unsafeRunSync().asXmlReport
-// res0: Xml = <EngineResult>
+result.get.asXmlReport
+// res0: <none>.<root>.cats.xml.Xml = <EngineResult>
 //  <Data>
 //   <Person name="Mimmo" lastName="Rossi" age="16">
 //    <Citizenship country="IT"/>
@@ -126,9 +125,6 @@ result.unsafeRunSync().asXmlReport
 // </Reason>
 //      </Reasons>
 //     </Verdict>
-//     <ExecutionTime>
-//      <Duration length="96000" unit="NANOSECONDS"/>
-//     </ExecutionTime>
 //    </RuleResult>
 //    <RuleResult>
 //     <RuleInfo name="Check Age >= 18" description="" targetInfo="age">
@@ -139,9 +135,6 @@ result.unsafeRunSync().asXmlReport
 //       <Reason>Only >= 18 age are allowed!</Reason>
 //      </Reasons>
 //     </Verdict>
-//     <ExecutionTime>
-//      <Duration length="9125" unit="NANOSECONDS"/>
-//     </ExecutionTime>
 //    </RuleResult>
 //   </EvaluatedRules>
 //  </Verdict>

@@ -40,13 +40,13 @@ class UsabilityTestSpec
       )
 
       val engine: IO[PureRulesEngine[Order]] =
-        RulesEngine.pure
+        RulesEngine
           .withRules(returnRules)
           .denyAllNotAllowed[IO]
 
       val result: IO[RuleResultsInterpreterVerdict] = engine
         .map(
-          _.pureSeqEval(
+          _.seqEvalPure(
             Order(
               id     = "123",
               shipTo = ShipTo("Via Roma 1", Country.IT),

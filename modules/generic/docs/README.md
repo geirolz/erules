@@ -17,7 +17,7 @@ import erules.generic.implicits.*
 
 case class Person(name: String, age: Int)
 
-Rule[Int]("Check age")
-  .const[Id](RuleVerdict.Allow.withoutReasons)
+Rule.pure[Int]("Check age")
+  .const(RuleVerdict.Allow.withoutReasons)
   .contramapTarget[Person](_.age)
 ```

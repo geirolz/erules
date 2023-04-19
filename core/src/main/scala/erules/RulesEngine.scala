@@ -1,6 +1,6 @@
 package erules
 
-import cats.{Applicative, ApplicativeThrow, Id, Parallel}
+import cats.{~>, Applicative, ApplicativeThrow, Parallel}
 import cats.data.NonEmptyList
 import cats.effect.kernel.Async
 import cats.effect.Sync
@@ -36,10 +36,10 @@ case class RulesEngine[F[_], T] private (
       rules.map(_.eval(data)).sequence
     )
 
-  def pureSeqEval(data: T)(implicit F: IsId[F]): EngineResult[T] =
+  def seqEvalPure(data: T)(implicit F: IsId[F]): EngineResult[T] =
     createResult(
       data,
-      rules.map(_.pureEval(data)).liftId[F]
+      rules.map(_.evalPure(data)).liftId[F]
     )(F.applicative)
 
   private def createResult(
@@ -56,38 +56,13 @@ case class RulesEngine[F[_], T] private (
 }
 object RulesEngine {
 
-  def apply[F[_]: Applicative]: RulesEngineRulesBuilder[F] =
-    new RulesEngineRulesBuilder[F]
+  def withRules[F[_], T](head1: Rule[F, T], tail: Rule[F, T]*): RulesEngineIntBuilder[F, T] =
+    withRules[F, T](NonEmptyList.of[Rule[F, T]](head1, tail*))
 
-  def pure: RulesEngineRulesBuilder[Id] =
-    apply[Id]
+  def withRules[F[_], T](rules: NonEmptyList[Rule[F, T]]): RulesEngineIntBuilder[F, T] =
+    new RulesEngineIntBuilder[F, T](rules)
 
-  class RulesEngineRulesBuilder[F[_]: Applicative] private[RulesEngine] {
-
-    // effect
-    def withRules[T](
-      head1: Rule[F, T],
-      tail: Rule[F, T]*
-    ): RulesEngineIntBuilder[F, T] =
-      withRules[T](NonEmptyList.of[Rule[F, T]](head1, tail*))
-
-    def withRules[T](rules: NonEmptyList[Rule[F, T]]): RulesEngineIntBuilder[F, T] =
-      new RulesEngineIntBuilder[F, T](rules)
-
-    // pure
-    def withRules[G[_]: IsId, T](
-      head1: Rule[G, T],
-      tail: Rule[G, T]*
-    ): RulesEngineIntBuilder[F, T] =
-      withRules[T](NonEmptyList.of[Rule[G, T]](head1, tail*).mapLift[F])
-
-    def withRules[G[_]: IsId, T](
-      rules: NonEmptyList[Rule[G, T]]
-    ): RulesEngineIntBuilder[F, T] =
-      withRules[T](rules.mapLift[F])
-  }
-
-  class RulesEngineIntBuilder[F[_]: Applicative, T] private[RulesEngine] (
+  class RulesEngineIntBuilder[F[_], T] private[RulesEngine] (
     rules: NonEmptyList[Rule[F, T]]
   ) {
 
@@ -98,7 +73,7 @@ object RulesEngine {
         case Nil =>
           ApplicativeThrow[G].pure(RulesEngine(rules, interpreter))
         case duplicatedDescriptions =>
-          ApplicativeThrow[G].raiseError(DuplicatedRulesException(duplicatedDescriptions))
+          ApplicativeThrow[G].raiseError(DuplicatedRulesError(duplicatedDescriptions))
       }
 
     def allowAllNotDenied[G[_]: ApplicativeThrow]: G[RulesEngine[F, T]] =
@@ -106,9 +81,17 @@ object RulesEngine {
 
     def denyAllNotAllowed[G[_]: ApplicativeThrow]: G[RulesEngine[F, T]] =
       withInterpreter(RuleResultsInterpreter.Defaults.denyAllNotAllowed)
+
+    def liftK[G[_]: Applicative](implicit isId: IsId[F]): RulesEngineIntBuilder[G, T] =
+      mapK[G](new ~>[F, G] {
+        def apply[A](fa: F[A]): G[A] = Applicative[G].pure(isId.unliftId(fa))
+      })
+
+    def mapK[G[_]](fg: F ~> G): RulesEngineIntBuilder[G, T] =
+      new RulesEngineIntBuilder[G, T](rules.map(_.mapK(fg)))
   }
 
-  case class DuplicatedRulesException[F[_], T](duplicates: List[Rule[F, T]])
+  case class DuplicatedRulesError[F[_], T](duplicates: List[Rule[F, T]])
       extends RuntimeException(s"Duplicated rules found!\n${duplicates
           .map(_.fullDescription.prependedAll("- ").mkString)
           .mkString(",")}")

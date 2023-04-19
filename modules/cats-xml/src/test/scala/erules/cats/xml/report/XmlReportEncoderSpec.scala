@@ -3,7 +3,7 @@ package erules.cats.xml.report
 import cats.effect.IO
 import cats.xml.{Xml, XmlNode}
 import cats.xml.codec.Encoder
-import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.{PureRule, PureRulesEngine, Rule, RulesEngine}
 import erules.RuleVerdict.Allow
 
 class XmlReportEncoderSpec extends munit.CatsEffectSuite {
@@ -28,14 +28,14 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
       Allow.because("because yes!")
     }
 
-    val engine: IO[RulesEngineIO[Foo]] =
-      RulesEngine[IO]
+    val engine: IO[PureRulesEngine[Foo]] =
+      RulesEngine
         .withRules(allowYEqZero)
         .denyAllNotAllowed[IO]
 
     val result: IO[Xml] =
       engine
-        .flatMap(_.parEval(Foo("TEST", 0)))
+        .map(_.seqEvalPure(Foo("TEST", 0)))
         .map(_.drainExecutionsTime.asXmlReport)
 
     assertIO(

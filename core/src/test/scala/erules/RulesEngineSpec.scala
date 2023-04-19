@@ -32,11 +32,12 @@ class RulesEngineSpec
       }
 
       assert(
-        RulesEngine.pure
+        RulesEngine
           .withRules(
             allowYEqZero1,
             allowYEqZero2
           )
+          .liftK[IO]
           .denyAllNotAllowed[Try]
           .failed
           .isSuccess
@@ -54,8 +55,9 @@ class RulesEngineSpec
       }
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(allowYEqZero)
+          .liftK[IO]
           .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
@@ -83,11 +85,12 @@ class RulesEngineSpec
       }
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(
             denyXEqTest,
             allowYEqZero
           )
+          .liftK[IO]
           .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
@@ -114,8 +117,9 @@ class RulesEngineSpec
       }
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(allowYEqZero)
+          .liftK[IO]
           .denyAllNotAllowed[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
@@ -145,7 +149,7 @@ class RulesEngineSpec
       val failed2: RuleIO[Foo] = Rule("PUFF").failed(ex2)
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(
             allow1,
             failed1,
@@ -175,8 +179,9 @@ class RulesEngineSpec
       }
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(denyYEqZero)
+          .liftK[IO]
           .allowAllNotDenied[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 1)))
@@ -204,11 +209,12 @@ class RulesEngineSpec
       }
 
       val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+        RulesEngine
           .withRules(
             denyXEqTest,
             allowYEqZero
           )
+          .liftK[IO]
           .allowAllNotDenied[IO]
 
       val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
@@ -231,12 +237,12 @@ class RulesEngineSpec
         Allow.withoutReasons
       }
 
-      val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+      val engine: IO[PureRulesEngine[Foo]] =
+        RulesEngine
           .withRules(allowYEqZero)
           .allowAllNotDenied[IO]
 
-      val result: IO[EngineResult[Foo]] = engine.flatMap(_.parEval(Foo("TEST", 0)))
+      val result: IO[EngineResult[Foo]] = engine.map(_.seqEvalPure(Foo("TEST", 0)))
 
       result.assertingIgnoringTimes(
         _ shouldBe EngineResult[Foo](

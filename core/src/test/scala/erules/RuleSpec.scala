@@ -110,13 +110,13 @@ class RuleSpec
 
       for {
         _ <- rule
-          .covary[IO]
+          .liftK[IO]
           .eval(Foo())
           .assertingIgnoringTimes(
             _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
           )
         _ <- rule
-          .covary[IO]
+          .liftK[IO]
           .eval(Bar())
           .assertingIgnoringTimes(
             _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
@@ -178,7 +178,7 @@ class RuleSpec
       }
 
       rule
-        .covary[IO]
+        .liftK[IO]
         .eval(Foo("TEST", 0))
         .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons))
     }
@@ -191,7 +191,7 @@ class RuleSpec
       }
 
       rule
-        .covary[IO]
+        .liftK[IO]
         .eval(Foo("TEST", 1))
         .assertingIgnoringTimes(
           _ shouldBe RuleResult.forRule(rule).succeeded(Ignore.noMatch)
@@ -205,19 +205,19 @@ class RuleSpec
       Rule
         .pure[String]("Non Empty String")
         .assert("String must be non empty")(_.nonEmpty)
-        .pureEval("NON_EMPTY_STRING")
+        .evalPure("NON_EMPTY_STRING")
         .verdict shouldBe Right(Allow.withoutReasons)
 
       Rule
         .pure[String]("Non Empty String")
         .assert("String must be non empty")(_.nonEmpty)
-        .pureEval("")
+        .evalPure("")
         .verdict shouldBe Right(Deny.because("String must be non empty"))
 
       Rule
         .pure[String]("Non Empty String")
         .assert(_.nonEmpty)
-        .pureEval("")
+        .evalPure("")
         .verdict shouldBe Right(Deny.withoutReasons)
     }
 
@@ -225,19 +225,19 @@ class RuleSpec
       Rule
         .pure[String]("Non Empty String")
         .assertNot("String must be non empty")(_.isEmpty)
-        .pureEval("NON_EMPTY_STRING")
+        .evalPure("NON_EMPTY_STRING")
         .verdict shouldBe Right(Allow.withoutReasons)
 
       Rule
         .pure[String]("Non Empty String")
         .assertNot("String must be non empty")(_.isEmpty)
-        .pureEval("")
+        .evalPure("")
         .verdict shouldBe Right(Deny.because("String must be non empty"))
 
       Rule
         .pure[String]("Non Empty String")
         .assertNot(_.isEmpty)
-        .pureEval("")
+        .evalPure("")
         .verdict shouldBe Right(Deny.withoutReasons)
     }
   }

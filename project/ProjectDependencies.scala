@@ -32,8 +32,8 @@ object ProjectDependencies {
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
       // test
-      "io.circe" %% "circe-parser" % circeVersion,
-      "io.circe" %% "circe-literal" % circeVersion
+      "io.circe" %% "circe-parser" % circeVersion % Test,
+      "io.circe" %% "circe-literal" % circeVersion % Test
     )
   }
 

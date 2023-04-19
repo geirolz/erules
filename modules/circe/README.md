@@ -38,14 +38,14 @@ val checkCitizenship: PureRule[Citizenship] =
     case Citizenship(Country("UK")) => Allow.withoutReasons
     case _ => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$56225/0x00000008094a42d0@7277a96c,RuleInfo(Check UK citizenship,None,None))
+// checkCitizenship: PureRule[Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
 val checkAdultAge: PureRule[Age] =
   Rule("Check Age >= 18") {
     case a: Age if a.value >= 18 => Allow.withoutReasons
     case _ => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(repl.MdocSession$MdocApp$$Lambda$56229/0x00000008094bc2d0@40de50fc,RuleInfo(Check Age >= 18,None,None))
+// checkAdultAge: PureRule[Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
 val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@39a235e,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$21448/0x0000000804a1ede8@2948a699,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@159e1b62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@31935e2f,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import 
@@ -73,22 +73,21 @@ And create the JSON report
 import erules.*
 import erules.implicits.*
 import erules.circe.implicits.*
-
-import cats.effect.IO
-import cats.effect.unsafe.implicits.*
+import scala.util.Try
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 // person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
-// result: IO[EngineResult[Person]] = IO(...)
+val result: Try[EngineResult[Person]] =
+  RulesEngine
+    .withRules(allPersonRules)
+    .denyAllNotAllowed[Try]
+    .map(_.seqEvalPure(person))
+// result: Try[EngineResult[Person]] = Success(EngineResult(Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT))),Denied(NonEmptyList(RuleResult(RuleInfo(Check UK citizenship,None,Some(citizenship)),Right(DenyImpl(List(EvalReason(Only UK citizenship is allowed!)))),None), RuleResult(RuleInfo(Check Age >= 18,None,Some(age)),Right(DenyImpl(List(EvalReason(Only >= 18 age are allowed!)))),None)))))
 
 //yolo
-result.unsafeRunSync().asJsonReport
-// res0: Json = {
+result.get.asJsonReport
+// res0: io.circe.Json = {
 //   "data" : {
 //     "name" : "Mimmo",
 //     "lastName" : "Rossi",
@@ -115,10 +114,6 @@ result.unsafeRunSync().asJsonReport
 //           "reasons" : [
 //             "Only UK citizenship is allowed!"
 //           ]
-//         },
-//         "executionTime" : {
-//           "length" : 87625,
-//           "unit" : "NANOSECONDS"
 //         }
 //       },
 //       {
@@ -132,10 +127,6 @@ result.unsafeRunSync().asJsonReport
 //           "reasons" : [
 //             "Only >= 18 age are allowed!"
 //           ]
-//         },
-//         "executionTime" : {
-//           "length" : 9042,
-//           "unit" : "NANOSECONDS"
 //         }
 //       }
 //     ]

@@ -99,10 +99,11 @@ import cats.effect.unsafe.implicits.*
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
+val result: IO[EngineResult[Person]] =
+  RulesEngine
+    .withRules[Id, Person](allPersonRules)
+    .denyAllNotAllowed[IO]
+    .map(_.seqEvalPure(person))
 
 //yolo
 result.unsafeRunSync().asReport[String]

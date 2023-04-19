@@ -2,7 +2,7 @@ package erules.report
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.{PureRule, PureRulesEngine, Rule, RulesEngine}
 import erules.RuleVerdict.Allow
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
@@ -21,14 +21,14 @@ class StringReportEncoderSpec extends AsyncWordSpec with AsyncIOSpec with Matche
         Allow.withoutReasons
       }
 
-      val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+      val engine: IO[PureRulesEngine[Foo]] =
+        RulesEngine
           .withRules(allowYEqZero)
           .denyAllNotAllowed[IO]
 
       val result: IO[String] =
         engine
-          .flatMap(_.parEval(Foo("TEST", 0)))
+          .map(_.seqEvalPure(Foo("TEST", 0)))
           .map(_.drainExecutionsTime.asReport[String])
 
       result

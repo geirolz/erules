@@ -19,8 +19,9 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
     }
 
     val engine: IO[RulesEngineIO[Foo]] =
-      RulesEngine[IO]
+      RulesEngine
         .withRules(allowYEqZero)
+        .liftK[IO]
         .denyAllNotAllowed[IO]
 
     val result: IO[Json] =

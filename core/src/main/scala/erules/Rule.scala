@@ -115,7 +115,7 @@ sealed trait Rule[F[_], -T] extends Serializable {
     * @return
     *   A lifted rule to specified effect type `G`
     */
-  def covary[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, T]
+  def liftK[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, T]
 
   /** Lift a rule with effect `F[_]` to specified `G[_]`. Value is lifted using specified
     * `FunctionK` instance
@@ -137,7 +137,7 @@ sealed trait Rule[F[_], -T] extends Serializable {
     *
     * `executionTime` is always set to `None`
     */
-  def pureEval[TT <: T](data: TT)(implicit F: IsId[F]): RuleResult.Unbiased =
+  def evalPure[TT <: T](data: TT)(implicit F: IsId[F]): RuleResult.Unbiased =
     RuleResult.forRule(this)(
       verdict       = Right(F.unliftId(evalRaw[TT](data))),
       executionTime = None
@@ -239,7 +239,7 @@ object Rule extends RuleInstances {
     override def evalRaw[TT2 <: TT](data: TT2): F[RuleVerdict] =
       f(data)
 
-    override def covary[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, TT] =
+    override def liftK[G[_]: Applicative](implicit isId: IsId[F]): Rule[G, TT] =
       copy[G, TT](f = f.andThen(fa => Applicative[G].pure(fa)))
 
     override def mapK[G[_]](f: F ~> G): Rule[G, TT] =
@@ -272,6 +272,6 @@ private[erules] trait RuleInstances {
     r => s"Rule('${r.fullDescription}')"
 
   implicit class PureRuleOps[F[_]: Functor, I[_]: IsId, T](fa: F[Rule[I, T]]) {
-    def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.covary[G])
+    def mapLift[G[_]: Applicative]: F[Rule[G, T]] = fa.map(_.liftK[G])
   }
 }

@@ -81,7 +81,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$8822/0x00000008024462c8@66199728,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$8822/0x00000008024462c8@6d65c741,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4e8bcb62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4a39095c,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -103,10 +103,11 @@ import cats.effect.unsafe.implicits.*
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 // person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
+val result: IO[EngineResult[Person]] =
+  RulesEngine
+    .withRules[Id, Person](allPersonRules)
+    .denyAllNotAllowed[IO]
+    .map(_.seqEvalPure(person))
 // result: IO[EngineResult[Person]] = IO(...)
 
 //yolo
@@ -121,7 +122,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 167208 nanoseconds
+// - Execution time: *not measured*
 // 
 // - Verdict: Right(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -130,7 +131,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 12500 nanoseconds
+// - Execution time: *not measured*
 // 
 // - Verdict: Right(Deny)
 // - Because: Only >= 18 age are allowed!

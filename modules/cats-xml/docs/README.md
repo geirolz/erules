@@ -65,6 +65,7 @@ Define the `Person` encoder
 import cats.xml.codec.Encoder
 import cats.xml.XmlNode
 import cats.xml.implicits.*
+import scala.util.Try
 
 implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
   XmlNode("Person")
@@ -88,16 +89,14 @@ import erules.*
 import erules.implicits.*
 import erules.cats.xml.implicits.*
 
-import cats.effect.IO
-import cats.effect.unsafe.implicits.*
-
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
+val result: Try[EngineResult[Person]]  =
+  RulesEngine
+    .withRules(allPersonRules)
+    .denyAllNotAllowed[Try]
+    .map(_.seqEvalPure(person))
 
 //yolo
-result.unsafeRunSync().asXmlReport
+result.get.asXmlReport
 ```
