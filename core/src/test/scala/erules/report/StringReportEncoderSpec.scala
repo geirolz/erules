@@ -17,7 +17,7 @@ class StringReportEncoderSpec extends AsyncWordSpec with AsyncIOSpec with Matche
 
       case class Foo(x: String, y: Int)
 
-      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").matchOrIgnore { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 

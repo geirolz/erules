@@ -57,7 +57,7 @@ private[erules] trait RuleVerdictBecauseSupport[+T <: RuleVerdict] {
 object RuleVerdict extends RuleVerdictInstances {
 
   // noinspection ScalaWeakerAccess
-  val noReasons: List[EvalReason] = Nil
+  lazy val noReasons: List[EvalReason] = Nil
 
   // TODO: add test
   def whenNot(b: Boolean)(ifTrue: => RuleVerdict, ifFalse: => RuleVerdict): RuleVerdict =
@@ -71,7 +71,7 @@ object RuleVerdict extends RuleVerdictInstances {
   sealed trait Allow extends RuleVerdict with RuleVerdictBecauseSupport[Allow]
   object Allow extends RuleVerdictBecauseSupport[Allow] {
 
-    val allNotExplicitlyDenied: Allow = Allow.because("Allow All Not Explicitly Denied")
+    lazy val allNotExplicitlyDenied: Allow = Allow.because("Allow All Not Explicitly Denied")
 
     // TODO: add test
     def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =
@@ -107,7 +107,7 @@ object RuleVerdict extends RuleVerdictInstances {
   sealed trait Deny extends RuleVerdict with RuleVerdictBecauseSupport[Deny]
   object Deny extends RuleVerdictBecauseSupport[Deny] {
 
-    val allNotExplicitlyAllowed: Deny = Deny.because("Deny All Not Explicitly Allowed")
+    lazy val allNotExplicitlyAllowed: Deny = Deny.because("Deny All Not Explicitly Allowed")
 
     // TODO: add test
     def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =
@@ -143,7 +143,7 @@ object RuleVerdict extends RuleVerdictInstances {
   sealed trait Ignore extends RuleVerdict with RuleVerdictBecauseSupport[Ignore]
   object Ignore extends RuleVerdictBecauseSupport[Ignore] {
 
-    val noMatch: Ignore = Ignore.because("No match")
+    lazy val noMatch: Ignore = Ignore.because("No match")
 
     // TODO: add test
     def when(b: Boolean)(ifFalse: => RuleVerdict): RuleVerdict =

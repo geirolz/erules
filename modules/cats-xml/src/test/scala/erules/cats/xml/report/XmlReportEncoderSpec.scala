@@ -24,7 +24,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
       )
     }
 
-    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").matchOrIgnore { case Foo(_, 0) =>
       Allow.because("because yes!")
     }
 
