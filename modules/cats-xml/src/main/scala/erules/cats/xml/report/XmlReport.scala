@@ -2,7 +2,7 @@ package erules.cats.xml.report
 
 import cats.xml.codec.Encoder
 import cats.xml.Xml
-import erules.core.*
+import erules.{EngineResult, RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 
 object XmlReport extends XmlReportInstances with XmlReportSyntax {
   def fromEncoder[T: Encoder]: XmlReportEncoder[T] =
@@ -15,13 +15,12 @@ private[xml] trait XmlReportInstances {
   implicit def engineResultXmlReportEncoder[T: Encoder]: XmlReportEncoder[EngineResult[T]] =
     XmlReport.fromEncoder[EngineResult[T]]
 
-  implicit def ruleResultsInterpreterVerdictXmlReportEncoder[T]
-    : XmlReportEncoder[RuleResultsInterpreterVerdict[T]] =
-    XmlReport.fromEncoder[RuleResultsInterpreterVerdict[T]]
+  implicit val ruleResultsInterpreterVerdictXmlReportEncoder
+    : XmlReportEncoder[RuleResultsInterpreterVerdict] =
+    XmlReport.fromEncoder[RuleResultsInterpreterVerdict]
 
-  implicit def ruleRuleResultXmlReportEncoder[T]
-    : XmlReportEncoder[RuleResult[T, ? <: RuleVerdict]] =
-    XmlReport.fromEncoder[RuleResult[T, ? <: RuleVerdict]]
+  implicit val ruleRuleResultXmlReportEncoder: XmlReportEncoder[RuleResult[? <: RuleVerdict]] =
+    XmlReport.fromEncoder[RuleResult[? <: RuleVerdict]]
 
   implicit val ruleVerdictXmlReportEncoder: XmlReportEncoder[RuleVerdict] =
     XmlReport.fromEncoder[RuleVerdict]

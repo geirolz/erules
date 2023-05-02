@@ -1,7 +1,6 @@
 package erules
 
-import erules.core.*
-import erules.core.report.{ReportEncoderInstances, ReportEncoderSyntax, StringReportInstances}
+import erules.report.{ReportEncoderInstances, ReportEncoderSyntax, StringReportInstances}
 
 object implicits extends AllCoreInstances with AllCoreSyntax
 
@@ -19,7 +18,4 @@ private[erules] trait AllCoreInstances
 
 //---------- SYNTAX ----------
 object syntax extends AllCoreSyntax
-private[erules] trait AllCoreSyntax
-    extends RuleSyntax
-    with EvalReasonSyntax
-    with ReportEncoderSyntax
+private[erules] trait AllCoreSyntax extends EvalReasonSyntax with ReportEncoderSyntax

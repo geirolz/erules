@@ -1,8 +1,9 @@
-package erules.core.report
+package erules.report
 
 import cats.Show
-import erules.core.*
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import cats.effect.std.Console
+import erules.{EngineResult, EvalReason, RuleResult, RuleResultsInterpreterVerdict}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 object StringReportEncoder extends StringReportInstances with StringReportSyntax {
   val defaultHeaderMaxLen: Int       = 60
@@ -42,25 +43,25 @@ private[erules] trait StringReportInstances {
 
   implicit def stringReportEncoderForEngineResult[T](implicit
     showT: Show[T] = Show.fromToString[T],
-    reportEncoderERIR: StringReportEncoder[RuleResultsInterpreterVerdict[T]]
+    reportEncoderERIR: StringReportEncoder[RuleResultsInterpreterVerdict]
   ): StringReportEncoder[EngineResult[T]] =
     er =>
       StringReportEncoder.paragraph("ENGINE VERDICT", "#")(
         s"""
            |Data: ${showT.show(er.data)}
-           |Rules: ${er.verdict.evaluatedRules.size}
+           |Rules: ${er.verdict.evaluatedResults.size}
            |${reportEncoderERIR.report(er.verdict)}
            |""".stripMargin
       )
 
-  implicit def stringReportEncoderForRuleResultsInterpreterVerdict[T](implicit
-    reportEncoderEvalRule: StringReportEncoder[RuleResult[T, ? <: RuleVerdict]]
-  ): StringReportEncoder[RuleResultsInterpreterVerdict[T]] =
+  implicit def stringReportEncoderForRuleResultsInterpreterVerdict(implicit
+    reportEncoderEvalRule: StringReportEncoder[RuleResult.Unbiased]
+  ): StringReportEncoder[RuleResultsInterpreterVerdict] =
     t => {
 
-      val rulesReport: String = t.evaluatedRules
+      val rulesReport: String = t.evaluatedResults
         .map(er =>
-          StringReportEncoder.paragraph(er.rule.fullDescription)(
+          StringReportEncoder.paragraph(er.ruleInfo.fullDescription)(
             reportEncoderEvalRule.report(er)
           )
         )
@@ -78,8 +79,7 @@ private[erules] trait StringReportInstances {
          |""".stripMargin
     }
 
-  implicit def stringReportEncoderForRuleRuleResult[T]
-    : StringReportEncoder[RuleResult[T, ? <: RuleVerdict]] =
+  implicit val stringReportEncoderForRuleRuleResult: StringReportEncoder[RuleResult.Unbiased] =
     er => {
 
       val reasons: String = er.verdict.map(_.reasons) match {
@@ -88,9 +88,9 @@ private[erules] trait StringReportInstances {
         case Right(reasons) => s"- Because: ${EvalReason.stringifyList(reasons)}"
       }
 
-      s"""|- Rule: ${er.rule.name}
-          |- Description: ${er.rule.description.getOrElse("")}
-          |- Target: ${er.rule.targetInfo.getOrElse("")}
+      s"""|- Rule: ${er.ruleInfo.name}
+          |- Description: ${er.ruleInfo.description.getOrElse("")}
+          |- Target: ${er.ruleInfo.targetInfo.getOrElse("")}
           |- Execution time: ${er.executionTime
            .map(Show.catsShowForFiniteDuration.show)
            .getOrElse("*not measured*")}
@@ -102,6 +102,10 @@ private[erules] trait StringReportInstances {
 
 private[erules] trait StringReportSyntax {
   implicit class StringReportEncoderForAny[T](t: T) {
-    def asStringReport(implicit re: StringReportEncoder[T]): String = re.report(t)
+    def asStringReport(implicit re: StringReportEncoder[T]): String =
+      re.report(t)
+
+    def printStringReport[F[_]: Console](implicit re: StringReportEncoder[T]): F[Unit] =
+      Console[F].println(asStringReport)
   }
 }

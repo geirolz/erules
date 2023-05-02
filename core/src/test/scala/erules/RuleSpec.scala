@@ -1,11 +1,10 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
-import cats.Id
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
-import erules.core.testings.{ErulesAsyncAssertingSyntax, ReportValues}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
+import erules.testings.{ErulesAsyncAssertingSyntax, ReportValues}
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
@@ -28,7 +27,7 @@ class RuleSpec
       case class Bar(baz: Baz)
       case class Baz(value: String)
 
-      val bazRule: PureRule[Baz] = Rule("Check Baz value").check[Id, Baz](
+      val bazRule: PureRule[Baz] = Rule("Check Baz value")(
         _.value match {
           case "" => Deny.because("Empty value")
           case _  => Allow.withoutReasons
@@ -44,15 +43,15 @@ class RuleSpec
     }
   }
 
-  // ------------------------- EVAL ZIP -------------------------
-  "Rule.check.eval" should {
+  // ------------------------- EVAL -------------------------
+  "Rule.apply.eval" should {
     "return the right result once evaluated" in {
 
       sealed trait ADT
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.pure(Allow.withoutReasons)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -61,10 +60,14 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
 
@@ -76,7 +79,7 @@ class RuleSpec
 
       val ex = new RuntimeException("BOOM")
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.raiseError(ex)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -86,114 +89,167 @@ class RuleSpec
       for {
         _ <- rule
           .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
+          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
         _ <- rule
           .eval(Bar("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
-      } yield ()
-    }
-  }
-
-  "Rule.checkOrIgnore.eval" should {
-    "return the right result once evaluated" in {
-      case class Foo(@unused x: String, @unused y: Int)
-
-      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
-        case Foo(_, 0) => IO.pure(Allow.withoutReasons)
-        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
-      }
-
-      for {
-        _ <- rule
-          .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
-        _ <- rule
-          .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
 
-    "return an exception when a case fail" in {
-      case class Foo(@unused x: String, @unused y: Int)
-      val ex = new RuntimeException("BOOM")
-
-      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
-        case Foo(_, 0) => IO.raiseError(ex)
-        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
-      }
-
-      for {
-        _ <- rule
-          .eval(Foo("TEST", 0))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Left(ex)))
-        _ <- rule
-          .eval(Foo("TEST", 1))
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
-      } yield ()
-    }
-  }
-
-  "Rule.check.eval" should {
     "return the right result once evaluated when exhaustive" in {
       sealed trait ADT
       case class Foo() extends ADT
       case class Bar() extends ADT
 
-      val rule: PureRule[ADT] = Rule("Check Y value").check[Id, ADT] {
+      val rule: PureRule[ADT] = Rule("Check Y value") {
         case Foo() => Allow.withoutReasons
         case Bar() => Deny.withoutReasons
       }
 
       for {
         _ <- rule
-          .covary[IO]
+          .liftK[IO]
           .eval(Foo())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
         _ <- rule
-          .covary[IO]
+          .liftK[IO]
           .eval(Bar())
-          .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Deny.withoutReasons)))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
       } yield ()
     }
+
   }
 
-  "Rule.checkOrIgnore.eval" should {
+  "Rule.partially.eval" should {
+    "return the right result once evaluated" in {
+      case class Foo(@unused x: String, @unused y: Int)
+
+      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
+        case Foo(_, 0) => IO.pure(Allow.withoutReasons)
+        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
+      }
+
+      for {
+        _ <- rule
+          .eval(Foo("TEST", 0))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons)
+          )
+        _ <- rule
+          .eval(Foo("TEST", 1))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
+      } yield ()
+    }
+
+    "return an exception when a case fail" in {
+      case class Foo(@unused x: String, @unused y: Int)
+      val ex = new RuntimeException("BOOM")
+
+      val rule: RuleIO[Foo] = Rule("Check Y value").partially {
+        case Foo(_, 0) => IO.raiseError(ex)
+        case Foo(_, 1) => IO.pure(Deny.withoutReasons)
+      }
+
+      for {
+        _ <- rule
+          .eval(Foo("TEST", 0))
+          .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).failed(ex))
+        _ <- rule
+          .eval(Foo("TEST", 1))
+          .assertingIgnoringTimes(
+            _ shouldBe RuleResult.forRule(rule).succeeded(Deny.withoutReasons)
+          )
+      } yield ()
+    }
+
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
       rule
-        .covary[IO]
+        .liftK[IO]
         .eval(Foo("TEST", 0))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Allow.withoutReasons)))
+        .assertingIgnoringTimes(_ shouldBe RuleResult.forRule(rule).succeeded(Allow.withoutReasons))
     }
 
     "return the Ignore once evaluated out of the defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
-      val rule: PureRule[Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val rule: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
       rule
-        .covary[IO]
+        .liftK[IO]
         .eval(Foo("TEST", 1))
-        .assertingIgnoringTimes(_ shouldBe RuleResult(rule, Right(Ignore.noMatch)))
+        .assertingIgnoringTimes(
+          _ shouldBe RuleResult.forRule(rule).succeeded(Ignore.noMatch)
+        )
     }
   }
 
+  "Rule.assert*" should {
+
+    "assert" in {
+      Rule
+        .pure[String]("Non Empty String")
+        .assert("String must be non empty")(_.nonEmpty)
+        .evalPure("NON_EMPTY_STRING")
+        .verdict shouldBe Right(Allow.withoutReasons)
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assert("String must be non empty")(_.nonEmpty)
+        .evalPure("")
+        .verdict shouldBe Right(Deny.because("String must be non empty"))
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assert(_.nonEmpty)
+        .evalPure("")
+        .verdict shouldBe Right(Deny.withoutReasons)
+    }
+
+    "assertNot" in {
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot("String must be non empty")(_.isEmpty)
+        .evalPure("NON_EMPTY_STRING")
+        .verdict shouldBe Right(Allow.withoutReasons)
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot("String must be non empty")(_.isEmpty)
+        .evalPure("")
+        .verdict shouldBe Right(Deny.because("String must be non empty"))
+
+      Rule
+        .pure[String]("Non Empty String")
+        .assertNot(_.isEmpty)
+        .evalPure("")
+        .verdict shouldBe Right(Deny.withoutReasons)
+    }
+  }
   // ------------------------- EVAL RAW -------------------------
-  "Rule.check.evalRaw" should {
+  "Rule.apply.evalRaw" should {
     "return the right result once evaluated" in {
 
       sealed trait ADT
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: Rule[IO, ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: Rule[IO, ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.pure(Allow.withoutReasons)
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -211,7 +267,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int) extends ADT
       case class Bar(@unused x: String, @unused y: Int) extends ADT
 
-      val rule: RuleIO[ADT] = Rule("Check Y value").check[IO, ADT] {
+      val rule: RuleIO[ADT] = Rule("Check Y value") {
         case Foo(_, 0) => IO.raiseError(new RuntimeException("BOOM"))
         case Bar(_, 1) => IO.pure(Deny.withoutReasons)
         case _         => IO.pure(Ignore.withoutReasons)
@@ -222,9 +278,23 @@ class RuleSpec
         _ <- rule.evalRaw(Bar("TEST", 1)).asserting(_ shouldBe RuleVerdict.Deny.withoutReasons)
       } yield ()
     }
+
+    "return the right result once evaluated when exhaustive" in {
+      sealed trait ADT
+      case class Foo() extends ADT
+      case class Bar() extends ADT
+
+      val rule: PureRule[ADT] = Rule("Check Y value") {
+        case Foo() => Allow.withoutReasons
+        case Bar() => Deny.withoutReasons
+      }
+
+      rule.evalRaw(Foo()) shouldBe RuleVerdict.Allow.withoutReasons
+      rule.evalRaw(Bar()) shouldBe RuleVerdict.Deny.withoutReasons
+    }
   }
 
-  "Rule.checkOrIgnore.evalRaw" should {
+  "Rule.partially.evalRaw" should {
     "return the right result once evaluated" in {
       case class Foo(@unused x: String, @unused y: Int)
 
@@ -252,30 +322,12 @@ class RuleSpec
         _ <- rule.evalRaw(Foo("TEST", 1)).asserting(_ shouldBe RuleVerdict.Deny.withoutReasons)
       } yield ()
     }
-  }
 
-  "Rule.check.evalRaw" should {
-    "return the right result once evaluated when exhaustive" in {
-      sealed trait ADT
-      case class Foo() extends ADT
-      case class Bar() extends ADT
-
-      val rule: Rule[Id, ADT] = Rule("Check Y value").check[Id, ADT] {
-        case Foo() => Allow.withoutReasons
-        case Bar() => Deny.withoutReasons
-      }
-
-      rule.evalRaw(Foo()) shouldBe RuleVerdict.Allow.withoutReasons
-      rule.evalRaw(Bar()) shouldBe RuleVerdict.Deny.withoutReasons
-    }
-  }
-
-  "Rule.checkOrIgnore.evalRaw" should {
     "return the right result once evaluated in defined domain" in {
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -286,7 +338,7 @@ class RuleSpec
       case class Foo(@unused x: String, @unused y: Int)
 
       val rule: PureRule[Foo] =
-        Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+        Rule("Check Y value").partially { case Foo(_, 0) =>
           Allow.withoutReasons
         }
 
@@ -301,10 +353,10 @@ class RuleSpec
 
       val duplicated: List[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 1) =>
+          Rule("Check Y value").partially { case Foo(_, 1) =>
             Allow.withoutReasons
           }
         )
@@ -318,10 +370,10 @@ class RuleSpec
 
       val duplicated: Seq[PureRule[Foo]] = Rule.findDuplicated(
         NonEmptyList.of(
-          Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+          Rule("Check Y value").partially { case Foo(_, 0) =>
             Allow.withoutReasons
           },
-          Rule("Check X value").partially[Id, Foo] { case Foo("Foo", _) =>
+          Rule("Check X value").partially { case Foo("Foo", _) =>
             Allow.withoutReasons
           }
         )

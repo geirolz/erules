@@ -1,11 +1,10 @@
 package erules.cats.xml.report
 
 import cats.effect.IO
-import cats.Id
-import erules.core.{Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
 import cats.xml.{Xml, XmlNode}
 import cats.xml.codec.Encoder
+import erules.{PureRule, PureRulesEngine, Rule, RulesEngine}
+import erules.RuleVerdict.Allow
 
 class XmlReportEncoderSpec extends munit.CatsEffectSuite {
 
@@ -25,18 +24,18 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
       )
     }
 
-    val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
       Allow.because("because yes!")
     }
 
-    val engine: IO[RulesEngineIO[Foo]] =
-      RulesEngine[IO]
+    val engine: IO[PureRulesEngine[Foo]] =
+      RulesEngine
         .withRules(allowYEqZero)
-        .denyAllNotAllowed
+        .denyAllNotAllowed[IO]
 
     val result: IO[Xml] =
       engine
-        .flatMap(_.parEval(Foo("TEST", 0)))
+        .map(_.seqEvalPure(Foo("TEST", 0)))
         .map(_.drainExecutionsTime.asXmlReport)
 
     assertIO(
@@ -48,9 +47,9 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
                         <Verdict type="Allowed">
                          <EvaluatedRules>
                           <RuleResult>
-                           <Rule name="Check Y value" description="" targetInfo="">
+                           <RuleInfo name="Check Y value" description="" targetInfo="">
                             <FullDescription>Check Y value</FullDescription>
-                           </Rule>
+                           </RuleInfo>
                            <Verdict type="Allow">
                             <Reasons>
                              <Reason>because yes!</Reason>

@@ -1,8 +1,7 @@
 package erules.circe
 
+import erules.*
 import erules.circe.report.{JsonReportInstances, JsonReportSyntax}
-import erules.core.*
-import io.circe.generic.semiauto.deriveEncoder
 
 object implicits extends CirceAllInstances with CirceAllSyntax
 
@@ -22,18 +21,15 @@ private[circe] trait BasicTypesCirceInstances {
   implicit def engineResultCirceEncoder[T: Encoder]: Encoder[EngineResult[T]] =
     io.circe.generic.semiauto.deriveEncoder[EngineResult[T]]
 
-  implicit def ruleResultsInterpreterCirceEncoder[T]: Encoder[RuleResultsInterpreterVerdict[T]] =
+  implicit final val ruleResultsInterpreterCirceEncoder: Encoder[RuleResultsInterpreterVerdict] =
     Encoder.instance { v =>
       Json.obj(
         "type"           -> Json.fromString(v.typeName),
-        "evaluatedRules" -> Json.fromValues(v.evaluatedRules.toList.map(_.asJson))
+        "evaluatedRules" -> Json.fromValues(v.evaluatedResults.toList.map(_.asJson))
       )
     }
 
-  implicit def ruleResultCirceEncoder[T]: Encoder[RuleResult[T, RuleVerdict]] =
-    deriveEncoder[RuleResult[T, RuleVerdict]]
-
-  implicit def ruleCirceEncoder[T]: Encoder[AnyTypedRule[T]] =
+  implicit final val ruleInfoCirceEncoder: Encoder[RuleInfo] =
     Encoder.instance { v =>
       Json.obj(
         "name"            -> Json.fromString(v.name),
@@ -42,6 +38,16 @@ private[circe] trait BasicTypesCirceInstances {
         "fullDescription" -> Json.fromString(v.fullDescription)
       )
     }
+
+  implicit final def ruleResultCirceEncoder[V <: RuleVerdict: Encoder]: Encoder[RuleResult[V]] = {
+    Encoder.instance { v =>
+      Json.obj(
+        "ruleInfo"      -> v.ruleInfo.asJson,
+        "verdict"       -> v.verdict.asJson,
+        "executionTime" -> v.executionTime.asJson
+      )
+    }
+  }
 
   implicit final val ruleVerdictCirceEncoder: Encoder[RuleVerdict] =
     Encoder.instance { v =>

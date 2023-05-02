@@ -3,11 +3,17 @@ package erules.cats.xml
 import cats.xml.{XmlData, XmlNode}
 import cats.xml.codec.Encoder
 import erules.cats.xml.report.{XmlReportInstances, XmlReportSyntax}
-import erules.core.*
+import erules.{
+  EitherThrow,
+  EngineResult,
+  EvalReason,
+  RuleInfo,
+  RuleResult,
+  RuleResultsInterpreterVerdict,
+  RuleVerdict
+}
 
 import scala.concurrent.duration.FiniteDuration
-
-//import scala.concurrent.duration.FiniteDuration
 
 object implicits extends CatsXmlAllInstances with CatsXmlAllSyntax
 
@@ -29,29 +35,29 @@ private[xml] trait BasicTypesCatsXmlInstances {
         .withChildren(
           List(
             XmlNode("Data").withChildren(Encoder[T].encode(res.data).asNode.toList)
-          ) ++ Encoder[RuleResultsInterpreterVerdict[T]].encode(res.verdict).asNode.toList
+          ) ++ Encoder[RuleResultsInterpreterVerdict].encode(res.verdict).asNode.toList
         )
     })
 
-  implicit def ruleResultsInterpreterCatsXmlEncoder[T]
-    : Encoder[RuleResultsInterpreterVerdict[T]] = {
+  implicit final val ruleResultsInterpreterCatsXmlEncoder
+    : Encoder[RuleResultsInterpreterVerdict] = {
     Encoder.of { v =>
       XmlNode("Verdict")
         .withAttributes(
           "type" := v.typeName
         )
         .withChildren(
-          XmlNode("EvaluatedRules").withChildren(v.evaluatedRules.toList.flatMap(_.toXml.asNode))
+          XmlNode("EvaluatedRules").withChildren(v.evaluatedResults.toList.flatMap(_.toXml.asNode))
         )
     }
   }
 
-  implicit def ruleResultCatsXmlEncoder[T]: Encoder[RuleResult[T, RuleVerdict]] = {
-    Encoder.of[RuleResult[T, RuleVerdict]](result => {
+  implicit def ruleResultCatsXmlEncoder: Encoder[RuleResult[RuleVerdict]] = {
+    Encoder.of[RuleResult[RuleVerdict]](result => {
       XmlNode("RuleResult")
         .withChildren(
           List(
-            Encoder[AnyTypedRule[T]].encode(result.rule).asNode,
+            Encoder[RuleInfo].encode(result.ruleInfo).asNode,
             Encoder[EitherThrow[RuleVerdict]].encode(result.verdict).asNode,
             result.executionTime
               .flatMap(Encoder[FiniteDuration].encode(_).asNode)
@@ -61,9 +67,9 @@ private[xml] trait BasicTypesCatsXmlInstances {
     })
   }
 
-  implicit def ruleCatsXmlEncoder[T]: Encoder[AnyTypedRule[T]] =
+  implicit def ruleInfoCatsXmlEncoder: Encoder[RuleInfo] =
     Encoder.of { v =>
-      XmlNode("Rule")
+      XmlNode("RuleInfo")
         .withAttributes(
           "name" := v.name,
           "description" := v.description.map(XmlData.fromString).getOrElse(XmlData.empty),

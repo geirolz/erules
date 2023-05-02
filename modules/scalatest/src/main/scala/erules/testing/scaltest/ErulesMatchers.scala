@@ -1,6 +1,6 @@
 package erules.testing.scaltest
 
-import erules.core.{RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
+import erules.{RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 import org.scalatest.matchers.{BeMatcher, MatchResult, Matcher}
 
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
@@ -11,8 +11,8 @@ trait ErulesMatchers
 
 trait ErulesRuleTypedEvaluatedMatchers {
 
-  def executedInMax[T](maxDuration: FiniteDuration): Matcher[RuleResult.Free[T]] =
-    (actual: RuleResult.Free[T]) => {
+  def executedInMax(maxDuration: FiniteDuration): Matcher[RuleResult.Unbiased] =
+    (actual: RuleResult.Unbiased) => {
 
       val actualET   = actual.executionTime.getOrElse(FiniteDuration(0, MILLISECONDS)).toMillis
       val expectedET = maxDuration.toMillis
@@ -29,16 +29,16 @@ trait ErulesRuleTypedEvaluatedMatchers {
 
 trait ErulesRuleResultsInterpreterVerdictMatchers {
 
-  val allowed: BeMatcher[RuleResultsInterpreterVerdict[Nothing]] =
-    (left: RuleResultsInterpreterVerdict[Nothing]) =>
+  def allowed: BeMatcher[RuleResultsInterpreterVerdict] =
+    (left: RuleResultsInterpreterVerdict) =>
       MatchResult(
         matches                  = left.isAllowed,
         rawFailureMessage        = s"Expected to be Allowed but got ${left.typeName}",
         rawNegatedFailureMessage = s"Expected to be Denied but got ${left.typeName}"
       )
 
-  val denied: BeMatcher[RuleResultsInterpreterVerdict[Nothing]] =
-    (left: RuleResultsInterpreterVerdict[Nothing]) =>
+  def denied: BeMatcher[RuleResultsInterpreterVerdict] =
+    (left: RuleResultsInterpreterVerdict) =>
       MatchResult(
         matches                  = left.isDenied,
         rawFailureMessage        = s"Expected to be Denied but got ${left.typeName}",

@@ -1,8 +1,7 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import cats.Id
-import erules.core.RuleVerdict.{Allow, Deny}
+import erules.RuleVerdict.{Allow, Deny}
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -15,12 +14,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
       case class Foo(value: String)
 
-      val rule1: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
@@ -29,7 +28,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Allow.because("R1"))
           )
         )
       )
@@ -38,7 +37,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Allow.because("R2"))
           )
         )
       )
@@ -47,8 +46,8 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1"))),
-            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Allow.because("R1")),
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Allow.because("R2"))
           )
         )
       )
@@ -58,12 +57,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
       case class Foo(value: String)
 
-      val rule1: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
@@ -72,7 +71,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Allow.because("R1"))
           )
         )
       )
@@ -81,7 +80,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Deny.because("R2"))
           )
         )
       )
@@ -90,7 +89,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Deny.because("R2"))
           )
         )
       )
@@ -100,12 +99,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
       case class Foo(value: String)
 
-      val rule1: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
 
-      val rule2: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
@@ -114,7 +113,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Deny.because("R1"))
           )
         )
       )
@@ -123,7 +122,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Allow.because("R2"))
           )
         )
       )
@@ -132,7 +131,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Deny.because("R1"))
           )
         )
       )
@@ -142,12 +141,12 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
       case class Foo(value: String)
 
-      val rule1: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
 
-      val rule2: PureRule[Foo] = Rule("Check Foo").partially[Id, Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Deny.withoutReasons
       }
@@ -156,7 +155,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Deny.because("R1"))
           )
         )
       )
@@ -165,7 +164,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Deny.because("R2"))
           )
         )
       )
@@ -174,8 +173,8 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Deny.because("R1"))),
-            RuleResult(rule2, Right(RuleVerdict.Deny.because("R2")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Deny.because("R1")),
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Deny.because("R2"))
           )
         )
       )
@@ -188,17 +187,17 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
 
       case class Foo(value: String)
 
-      val rule1: PureRule[Foo] = Rule("Check Foo 1").partially[Id, Foo] {
+      val rule1: PureRule[Foo] = Rule("Check Foo 1").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule2: PureRule[Foo] = Rule("Check Foo 2").partially[Id, Foo] {
+      val rule2: PureRule[Foo] = Rule("Check Foo 2").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
 
-      val rule3: PureRule[Foo] = Rule("Check Foo 3").partially[Id, Foo] {
+      val rule3: PureRule[Foo] = Rule("Check Foo 3").partially {
         case Foo("")     => Deny.because("Empty Value")
         case Foo("TEST") => Allow.withoutReasons
       }
@@ -207,7 +206,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Allow.because("R1"))
           )
         )
       )
@@ -216,7 +215,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2")))
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Allow.because("R2"))
           )
         )
       )
@@ -225,7 +224,7 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule3, Right(RuleVerdict.Allow.because("R3")))
+            RuleResult.forRule(rule3).succeeded(RuleVerdict.Allow.because("R3"))
           )
         )
       )
@@ -234,9 +233,9 @@ class EngineResultSpec extends AnyWordSpec with Matchers with EitherValues {
         data = Foo("TEST"),
         verdict = RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.of(
-            RuleResult(rule1, Right(RuleVerdict.Allow.because("R1"))),
-            RuleResult(rule2, Right(RuleVerdict.Allow.because("R2"))),
-            RuleResult(rule3, Right(RuleVerdict.Allow.because("R3")))
+            RuleResult.forRule(rule1).succeeded(RuleVerdict.Allow.because("R1")),
+            RuleResult.forRule(rule2).succeeded(RuleVerdict.Allow.because("R2")),
+            RuleResult.forRule(rule3).succeeded(RuleVerdict.Allow.because("R3"))
           )
         )
       )

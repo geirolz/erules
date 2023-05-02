@@ -1,6 +1,6 @@
 package erules.circe.report
 
-import erules.core.*
+import erules.{EngineResult, RuleResult, RuleResultsInterpreterVerdict, RuleVerdict}
 import io.circe.{Encoder, Json}
 
 object JsonReport extends JsonReportInstances with JsonReportSyntax {
@@ -14,17 +14,16 @@ private[circe] trait JsonReportInstances {
   implicit def engineResultJsonReportEncoder[T: Encoder]: JsonReportEncoder[EngineResult[T]] =
     JsonReport.fromEncoder[EngineResult[T]]
 
-  implicit def ruleResultsInterpreterVerdictJsonReportEncoder[T]
-    : JsonReportEncoder[RuleResultsInterpreterVerdict[T]] =
-    JsonReport.fromEncoder[RuleResultsInterpreterVerdict[T]]
+  implicit final val ruleResultsInterpreterVerdictJsonReportEncoder
+    : JsonReportEncoder[RuleResultsInterpreterVerdict] =
+    JsonReport.fromEncoder[RuleResultsInterpreterVerdict]
 
-  implicit def ruleRuleResultJsonReportEncoder[T]
-    : JsonReportEncoder[RuleResult[T, ? <: RuleVerdict]] =
-    JsonReport.fromEncoder[RuleResult[T, ? <: RuleVerdict]]
+  implicit final val ruleRuleResultJsonReportEncoder
+    : JsonReportEncoder[RuleResult[? <: RuleVerdict]] =
+    JsonReport.fromEncoder[RuleResult[? <: RuleVerdict]]
 
-  implicit val ruleVerdictJsonReportEncoder: JsonReportEncoder[RuleVerdict] =
+  implicit final val ruleVerdictJsonReportEncoder: JsonReportEncoder[RuleVerdict] =
     JsonReport.fromEncoder[RuleVerdict]
-
 }
 
 private[circe] trait JsonReportSyntax {

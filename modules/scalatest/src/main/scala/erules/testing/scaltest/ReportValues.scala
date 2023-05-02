@@ -1,7 +1,7 @@
 package erules.testing.scaltest
 
 import cats.effect.Async
-import erules.core.report.ReportEncoder
+import erules.report.ReportEncoder
 
 trait ReportValues {
 

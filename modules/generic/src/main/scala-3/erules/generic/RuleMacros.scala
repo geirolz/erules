@@ -1,6 +1,6 @@
 package erules.generic
 
-import erules.core.Rule
+import erules.Rule
 
 import scala.annotation.tailrec
 

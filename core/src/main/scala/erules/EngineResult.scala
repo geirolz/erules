@@ -1,6 +1,6 @@
-package erules.core
+package erules
 
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 /** Describes the engine output.
   *
@@ -13,13 +13,13 @@ import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
   */
 case class EngineResult[T](
   data: T,
-  verdict: RuleResultsInterpreterVerdict[T]
+  verdict: RuleResultsInterpreterVerdict
 ) extends Serializable {
 
   def drainExecutionsTime: EngineResult[T] =
     copy(verdict = this.verdict match {
-      case a @ Allowed(erules) => a.copy(evaluatedRules = erules.map(_.drainExecutionTime))
-      case a @ Denied(erules)  => a.copy(evaluatedRules = erules.map(_.drainExecutionTime))
+      case a @ Allowed(erules) => a.copy(evaluatedResults = erules.map(_.drainExecutionTime))
+      case a @ Denied(erules)  => a.copy(evaluatedResults = erules.map(_.drainExecutionTime))
     })
 }
 object EngineResult extends EngineResultInstances {
@@ -35,7 +35,11 @@ object EngineResult extends EngineResultInstances {
       }
     )
 
-  def combineAll[T](data: T, er1: EngineResult[T], erN: EngineResult[T]*): EngineResult[T] =
+  def combineAll[T](
+    data: T,
+    er1: EngineResult[T],
+    erN: EngineResult[T]*
+  ): EngineResult[T] =
     (er1 +: erN).toList.reduce((a, b) => combine(data, a, b))
 }
 

@@ -1,10 +1,10 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 
 trait RuleResultsInterpreter {
-  def interpret[T](report: NonEmptyList[RuleResult.Free[T]]): RuleResultsInterpreterVerdict[T]
+  def interpret(report: NonEmptyList[RuleResult.Unbiased]): RuleResultsInterpreterVerdict
 }
 object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
   object Defaults {
@@ -16,48 +16,50 @@ object RuleResultsInterpreter extends EvalResultsInterpreterInstances {
 private[erules] trait EvalResultsInterpreterInstances {
 
   class AllowAllNotDeniedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](
-      report: NonEmptyList[RuleResult.Free[T]]
-    ): RuleResultsInterpreterVerdict[T] =
+    override def interpret(
+      report: NonEmptyList[RuleResult.Unbiased]
+    ): RuleResultsInterpreterVerdict =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Allowed(
           NonEmptyList.one(
-            RuleResult.noMatch[T, Allow](Allow.allNotExplicitlyDenied)
+            RuleResult.noMatch[Allow](Allow.allNotExplicitlyDenied)
           )
         )
       )
   }
 
   class DenyAllNotAllowedRuleResultsInterpreter extends RuleResultsInterpreter {
-    override def interpret[T](
-      report: NonEmptyList[RuleResult.Free[T]]
-    ): RuleResultsInterpreterVerdict[T] =
+    override def interpret(
+      report: NonEmptyList[RuleResult.Unbiased]
+    ): RuleResultsInterpreterVerdict =
       partialEval(report).getOrElse(
         RuleResultsInterpreterVerdict.Denied(
           NonEmptyList.one(
-            RuleResult.noMatch[T, Deny](Deny.allNotExplicitlyAllowed)
+            RuleResult.noMatch[Deny](Deny.allNotExplicitlyAllowed)
           )
         )
       )
   }
 
-  private def partialEval[T](
-    report: NonEmptyList[RuleResult.Free[T]]
-  ): Option[RuleResultsInterpreterVerdict[T]] = {
-    type Res[+V <: RuleVerdict] = RuleResult[T, V]
+  private def partialEval(
+    report: NonEmptyList[RuleResult.Unbiased]
+  ): Option[RuleResultsInterpreterVerdict] = {
+    type Res[+V <: RuleVerdict] = RuleResult[V]
 
     report.toList
       .flatMap {
-        case _ @RuleResult(_: Rule[?, T], Right(_: Ignore), _) =>
+        case _ @RuleResult(_: RuleInfo, Right(_: Ignore), _) =>
           None
-        case _ @RuleResult(r: Rule[?, T], Left(ex), _) =>
-          Some(Left(RuleResult.denyForSafetyInCaseOfError(r.asInstanceOf[Rule[Nothing, T]], ex)))
-        case re @ RuleResult(_: Rule[?, T], Right(_: Deny), _) =>
+        case _ @RuleResult(info: RuleInfo, Left(ex), _) =>
+          Some(
+            Left(RuleResult(info).denyForSafetyInCaseOfError(ex).asInstanceOf[Res[Deny]])
+          )
+        case re @ RuleResult(_: RuleInfo, Right(_: Deny), _) =>
           Some(Left(re.asInstanceOf[Res[Deny]]))
-        case re @ RuleResult(_: Rule[?, T], Right(_: Allow), _) =>
+        case re @ RuleResult(_: RuleInfo, Right(_: Allow), _) =>
           Some(Right(re.asInstanceOf[Res[Allow]]))
       }
-      .partitionMap[Res[Deny], Res[Allow]](identity) match {
+      .partitionMap[Res[Deny], Res[Allow]]((a: Either[Res[Deny], Res[Allow]]) => a) match {
       case (_ @Nil, _ @Nil) =>
         None
       case (_ @Nil, allow :: allows) =>

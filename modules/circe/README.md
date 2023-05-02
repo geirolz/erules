@@ -25,27 +25,29 @@ case class Person(
 ```
 
 Let's write the rules!
+
 ```scala
-import erules.core.Rule
-import erules.core.RuleVerdict.*
+import erules.Rule
+import erules.PureRule
+import erules.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] =
-  Rule("Check UK citizenship").apply[Id, Citizenship]{
+val checkCitizenship: PureRule[Citizenship] =
+  Rule("Check UK citizenship") {
     case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
+    case _ => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
+// checkCitizenship: PureRule[Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
-val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age] {
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+val checkAdultAge: PureRule[Age] =
+  Rule("Check Age >= 18") {
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _ => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
+// checkAdultAge: PureRule[Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -53,7 +55,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@3a4e9ea8,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@717c3b21,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@159e1b62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@31935e2f,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import 
@@ -68,24 +70,23 @@ import io.circe.generic.auto.*
 
 And create the JSON report
 ```scala
-import erules.core.*
+import erules.*
 import erules.implicits.*
 import erules.circe.implicits.*
-
-import cats.effect.IO
-import cats.effect.unsafe.implicits.*
+import scala.util.Try
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 // person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
-// result: IO[EngineResult[Person]] = IO(...)
+val result: Try[EngineResult[Person]] =
+  RulesEngine
+    .withRules(allPersonRules)
+    .denyAllNotAllowed[Try]
+    .map(_.seqEvalPure(person))
+// result: Try[EngineResult[Person]] = Success(EngineResult(Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT))),Denied(NonEmptyList(RuleResult(RuleInfo(Check UK citizenship,None,Some(citizenship)),Right(DenyImpl(List(EvalReason(Only UK citizenship is allowed!)))),None), RuleResult(RuleInfo(Check Age >= 18,None,Some(age)),Right(DenyImpl(List(EvalReason(Only >= 18 age are allowed!)))),None)))))
 
 //yolo
-result.unsafeRunSync().asJsonReport
+result.get.asJsonReport
 // res0: io.circe.Json = {
 //   "data" : {
 //     "name" : "Mimmo",
@@ -103,7 +104,7 @@ result.unsafeRunSync().asJsonReport
 //     "type" : "Denied",
 //     "evaluatedRules" : [
 //       {
-//         "rule" : {
+//         "ruleInfo" : {
 //           "name" : "Check UK citizenship",
 //           "targetInfo" : "citizenship",
 //           "fullDescription" : "Check UK citizenship for citizenship"
@@ -113,14 +114,10 @@ result.unsafeRunSync().asJsonReport
 //           "reasons" : [
 //             "Only UK citizenship is allowed!"
 //           ]
-//         },
-//         "executionTime" : {
-//           "length" : 107042,
-//           "unit" : "NANOSECONDS"
 //         }
 //       },
 //       {
-//         "rule" : {
+//         "ruleInfo" : {
 //           "name" : "Check Age >= 18",
 //           "targetInfo" : "age",
 //           "fullDescription" : "Check Age >= 18 for age"
@@ -130,10 +127,6 @@ result.unsafeRunSync().asJsonReport
 //           "reasons" : [
 //             "Only >= 18 age are allowed!"
 //           ]
-//         },
-//         "executionTime" : {
-//           "length" : 10084,
-//           "unit" : "NANOSECONDS"
 //         }
 //       }
 //     ]

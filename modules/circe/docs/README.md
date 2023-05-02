@@ -25,25 +25,27 @@ case class Person(
 ```
 
 Let's write the rules!
+
 ```scala mdoc:to-string
-import erules.core.Rule
-import erules.core.RuleVerdict.*
+import erules.Rule
+import erules.PureRule
+import erules.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] =
-  Rule("Check UK citizenship").apply[Id, Citizenship]{
+val checkCitizenship: PureRule[Citizenship] =
+  Rule("Check UK citizenship") {
     case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
+    case _ => Deny.because("Only UK citizenship is allowed!")
   }
 
-val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age] {
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+val checkAdultAge: PureRule[Age] =
+  Rule("Check Age >= 18") {
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _ => Deny.because("Only >= 18 age are allowed!")
   }
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -65,20 +67,19 @@ import io.circe.generic.auto.*
 
 And create the JSON report
 ```scala mdoc:to-string
-import erules.core.*
+import erules.*
 import erules.implicits.*
 import erules.circe.implicits.*
-
-import cats.effect.IO
-import cats.effect.unsafe.implicits.*
+import scala.util.Try
 
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
+val result: Try[EngineResult[Person]] =
+  RulesEngine
+    .withRules(allPersonRules)
+    .denyAllNotAllowed[Try]
+    .map(_.seqEvalPure(person))
 
 //yolo
-result.unsafeRunSync().asJsonReport
+result.get.asJsonReport
 ```

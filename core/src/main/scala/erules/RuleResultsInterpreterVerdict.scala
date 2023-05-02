@@ -1,15 +1,15 @@
-package erules.core
+package erules
 
 import cats.data.NonEmptyList
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
 
 /** ADT to define the possible responses of the engine evaluation.
   */
-sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
+sealed trait RuleResultsInterpreterVerdict extends Serializable {
 
-  /** Result reasons
+  /** Evaluated rules results
     */
-  val evaluatedRules: NonEmptyList[RuleResult.Free[T]]
+  val evaluatedResults: NonEmptyList[RuleResult.Unbiased]
 
   /** Check if this is an instance of `Allowed` or not
     */
@@ -31,9 +31,9 @@ sealed trait RuleResultsInterpreterVerdict[-T] extends Serializable {
 }
 object RuleResultsInterpreterVerdict {
 
-  case class Allowed[T](evaluatedRules: NonEmptyList[RuleResult[T, RuleVerdict.Allow]])
-      extends RuleResultsInterpreterVerdict[T]
+  case class Allowed(evaluatedResults: NonEmptyList[RuleResult[RuleVerdict.Allow]])
+      extends RuleResultsInterpreterVerdict
 
-  case class Denied[T](evaluatedRules: NonEmptyList[RuleResult[T, RuleVerdict.Deny]])
-      extends RuleResultsInterpreterVerdict[T]
+  case class Denied(evaluatedResults: NonEmptyList[RuleResult[RuleVerdict.Deny]])
+      extends RuleResultsInterpreterVerdict
 }

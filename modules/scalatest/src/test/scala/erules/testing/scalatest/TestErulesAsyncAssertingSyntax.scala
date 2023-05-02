@@ -3,8 +3,8 @@ package erules.testing.scalatest
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import erules.core.{EngineResult, RuleResult, RuleVerdict}
-import erules.core.RuleResultsInterpreterVerdict.Allowed
+import erules.{EngineResult, RuleResult, RuleVerdict}
+import erules.RuleResultsInterpreterVerdict.Allowed
 import erules.testing.scaltest.ErulesAsyncAssertingSyntax
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -22,10 +22,10 @@ class TestErulesAsyncAssertingSyntax
   ) {
     IO(
       RuleResult
-        .const("Allow all", RuleVerdict.Allow.withoutReasons)
-        .copy(executionTime = Some(1.seconds))
+        .forRuleName("Allow all")
+        .succeeded(RuleVerdict.Allow.withoutReasons, Some(1.seconds))
     ).assertingIgnoringTimes(
-      _ shouldBe RuleResult.const("Allow all", RuleVerdict.Allow.withoutReasons)
+      _ shouldBe RuleResult.forRuleName("Allow all").succeeded(RuleVerdict.Allow.withoutReasons)
     )
   }
 
@@ -38,11 +38,11 @@ class TestErulesAsyncAssertingSyntax
         verdict = Allowed(
           NonEmptyList.of(
             RuleResult
-              .const("Allow all 1", RuleVerdict.Allow.withoutReasons)
-              .copy(executionTime = Some(1.seconds)),
+              .forRuleName("Allow all 1")
+              .succeeded(RuleVerdict.Allow.withoutReasons, Some(1.seconds)),
             RuleResult
-              .const("Allow all 2", RuleVerdict.Allow.withoutReasons)
-              .copy(executionTime = Some(2.seconds))
+              .forRuleName("Allow all 2")
+              .succeeded(RuleVerdict.Allow.withoutReasons, Some(2.seconds))
           )
         )
       )
@@ -52,9 +52,11 @@ class TestErulesAsyncAssertingSyntax
         verdict = Allowed(
           NonEmptyList.of(
             RuleResult
-              .const("Allow all 1", RuleVerdict.Allow.withoutReasons),
+              .forRuleName("Allow all 1")
+              .succeeded(RuleVerdict.Allow.withoutReasons),
             RuleResult
-              .const("Allow all 2", RuleVerdict.Allow.withoutReasons)
+              .forRuleName("Allow all 2")
+              .succeeded(RuleVerdict.Allow.withoutReasons)
           )
         )
       )

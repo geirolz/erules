@@ -1,9 +1,8 @@
 package erules.circe.report
 
 import cats.effect.IO
-import cats.Id
-import erules.core.{Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
+import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
+import erules.RuleVerdict.Allow
 import io.circe.Json
 
 class JsonReportEncoderSpec extends munit.CatsEffectSuite {
@@ -15,14 +14,15 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
   test("EngineResult.asJsonReport return a well-formatted JSON report") {
     case class Foo(x: String, y: Int)
 
-    val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
       Allow.because("reason")
     }
 
     val engine: IO[RulesEngineIO[Foo]] =
-      RulesEngine[IO]
+      RulesEngine
         .withRules(allowYEqZero)
-        .denyAllNotAllowed
+        .liftK[IO]
+        .denyAllNotAllowed[IO]
 
     val result: IO[Json] =
       engine
@@ -41,7 +41,7 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
           "type" : "Allowed",
           "evaluatedRules" : [
             {
-              "rule" : {
+              "ruleInfo" : {
                 "name" : "Check Y value",
                 "fullDescription" : "Check Y value"
               },

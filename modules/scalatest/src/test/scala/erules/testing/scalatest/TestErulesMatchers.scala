@@ -2,10 +2,10 @@ package erules.testing.scalatest
 
 import cats.data.NonEmptyList
 import cats.effect.testing.scalatest.AsyncIOSpec
-import erules.core.RuleResult
-import erules.core.RuleResultsInterpreterVerdict.{Allowed, Denied}
-import erules.core.RuleVerdict.{Allow, Deny, Ignore}
+import erules.RuleResultsInterpreterVerdict.{Allowed, Denied}
+import erules.RuleVerdict.{Allow, Deny, Ignore}
 import erules.testing.scaltest.ErulesMatchers
+import erules.RuleResult
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
 
@@ -13,9 +13,9 @@ class TestErulesMatchers extends AsyncFunSuite with AsyncIOSpec with ErulesMatch
 
   test("RuleResultsInterpreterVerdict should be allowed and should not be denied") {
 
-    val verdict: Allowed[Nothing] = Allowed(
+    val verdict: Allowed = Allowed(
       NonEmptyList.of(
-        RuleResult.const("Foo", Allow.withoutReasons)
+        RuleResult.forRuleName("Foo").succeeded(Allow.withoutReasons)
       )
     )
 
@@ -25,9 +25,9 @@ class TestErulesMatchers extends AsyncFunSuite with AsyncIOSpec with ErulesMatch
 
   test("RuleResultsInterpreterVerdict should be denied and should not be allowed") {
 
-    val verdict: Denied[Nothing] = Denied(
+    val verdict: Denied = Denied(
       NonEmptyList.of(
-        RuleResult.const("Foo", Deny.withoutReasons)
+        RuleResult.forRuleName("Foo").succeeded(Deny.withoutReasons)
       )
     )
 

@@ -51,27 +51,29 @@ Assuming we want to check:
 - The person has a UK citizenship
 
 Let's write the rules!
+
 ```scala
-import erules.core.Rule
-import erules.core.RuleVerdict.*
+import erules.Rule
+import erules.PureRule
+import erules.RuleVerdict.*
 import cats.data.NonEmptyList
 import cats.Id
 
-val checkCitizenship: Rule[Id, Citizenship] =
-  Rule("Check UK citizenship").apply[Id, Citizenship]{
+val checkCitizenship: PureRule[Citizenship] =
+  Rule("Check UK citizenship") {
     case Citizenship(Country("UK")) => Allow.withoutReasons
-    case _                          => Deny.because("Only UK citizenship is allowed!")
+    case _ => Deny.because("Only UK citizenship is allowed!")
   }
-// checkCitizenship: Rule[Id, Citizenship] = RuleImpl(<function1>,Check UK citizenship,None,None)
+// checkCitizenship: PureRule[Citizenship] = RuleImpl(<function1>,RuleInfo(Check UK citizenship,None,None))
 
-val checkAdultAge: Rule[Id, Age] =
-  Rule("Check Age >= 18").apply[Id, Age] {
-    case a: Age if a.value >= 18  => Allow.withoutReasons
-    case _                        => Deny.because("Only >= 18 age are allowed!")
+val checkAdultAge: PureRule[Age] =
+  Rule("Check Age >= 18") {
+    case a: Age if a.value >= 18 => Allow.withoutReasons
+    case _ => Deny.because("Only >= 18 age are allowed!")
   }
-// checkAdultAge: Rule[Id, Age] = RuleImpl(<function1>,Check Age >= 18,None,None)
+// checkAdultAge: PureRule[Age] = RuleImpl(<function1>,RuleInfo(Check Age >= 18,None,None))
 
-val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
+val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
     .targetInfo("citizenship")
     .contramap(_.citizenship),
@@ -79,7 +81,7 @@ val allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[Rule[Id, Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@3df931c5,Check UK citizenship,None,Some(citizenship)), RuleImpl(scala.Function1$$Lambda$12152/0x0000000802cb7950@6b57b3a7,Check Age >= 18,None,Some(age)))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4e8bcb62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4a39095c,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
@@ -93,7 +95,7 @@ We can evaluate rules in two different ways:
 - allowAllNotDenied
 
 ```scala
-import erules.core.*
+import erules.*
 import erules.implicits.*
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*
@@ -101,10 +103,11 @@ import cats.effect.unsafe.implicits.*
 val person: Person = Person("Mimmo", "Rossi", Age(16), Citizenship(Country("IT")))
 // person: Person = Person(Mimmo,Rossi,Age(16),Citizenship(Country(IT)))
 
-val result: IO[EngineResult[Person]]  = for {
-  engine <- RulesEngine[IO].withRules[Id, Person](allPersonRules).denyAllNotAllowed
-  result <- engine.parEval(person)
-} yield result
+val result: IO[EngineResult[Person]] =
+  RulesEngine
+    .withRules[Id, Person](allPersonRules)
+    .denyAllNotAllowed[IO]
+    .map(_.seqEvalPure(person))
 // result: IO[EngineResult[Person]] = IO(...)
 
 //yolo
@@ -119,7 +122,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check UK citizenship
 // - Description: 
 // - Target: citizenship
-// - Execution time: 115458 nanoseconds
+// - Execution time: *not measured*
 // 
 // - Verdict: Right(Deny)
 // - Because: Only UK citizenship is allowed!
@@ -128,7 +131,7 @@ result.unsafeRunSync().asReport[String]
 // - Rule: Check Age >= 18
 // - Description: 
 // - Target: age
-// - Execution time: 9125 nanoseconds
+// - Execution time: *not measured*
 // 
 // - Verdict: Right(Deny)
 // - Because: Only >= 18 age are allowed!

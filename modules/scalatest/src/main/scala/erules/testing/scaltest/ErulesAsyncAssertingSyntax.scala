@@ -1,7 +1,7 @@
 package erules.testing.scaltest
 
 import cats.Functor
-import erules.core.{EngineResult, RuleResult, RuleVerdict}
+import erules.{EngineResult, RuleResult, RuleVerdict}
 import org.scalatest.Assertion
 
 trait ErulesAsyncAssertingSyntax {
@@ -9,10 +9,10 @@ trait ErulesAsyncAssertingSyntax {
   import cats.implicits.*
 
   implicit class RuleResultAssertingOps[F[_]: Functor, -T, +V <: RuleVerdict](
-    fa: F[RuleResult[T, V]]
+    fa: F[RuleResult[V]]
   ) {
 
-    def assertingIgnoringTimes(f: RuleResult[T, V] => Assertion): F[Assertion] =
+    def assertingIgnoringTimes(f: RuleResult[V] => Assertion): F[Assertion] =
       fa.map(a => f(a.drainExecutionTime))
   }
 

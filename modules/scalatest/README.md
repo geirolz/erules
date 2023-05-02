@@ -8,7 +8,7 @@ Using scalatest we can easily test our engine importing the `erules-scalatest` m
 
 #### Matchers
 ```scala
-import erules.core.*
+import erules.*
 import erules.testing.scaltest.*
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -20,7 +20,7 @@ class MyTest extends AnyFunSuite
   
   test("testing engine verdict - denied"){
 
-    val verdict: RuleResultsInterpreterVerdict[String] = ???
+    val verdict: RuleResultsInterpreterVerdict = ???
 
     verdict shouldBe denied
     verdict should not be allowed
@@ -45,7 +45,7 @@ to support cats `IO` monad.
 
 #### Matchers
 ```scala
-import erules.core.*
+import erules.*
 import erules.testing.scaltest.*
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -60,10 +60,10 @@ class MyTest extends AsyncFunSuite
   test("testing rule result") {
     
     val rule: Rule[IO, String] = ???
-    val result: IO[RuleResult.Free[String]] = rule.eval("FOO")
+    val result: IO[RuleResult.Unbiased] = rule.eval("FOO")
     
     result.assertingIgnoringTimes(
-      _ shouldBe RuleResult.const("Allow all", RuleVerdict.Allow.withoutReasons)
+      _ shouldBe RuleResult.forRuleName("Allow all").succeeded(RuleVerdict.Allow.withoutReasons)
     )
   }
 }

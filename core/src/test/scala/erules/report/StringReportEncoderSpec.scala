@@ -1,10 +1,9 @@
-package erules.core.report
+package erules.report
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.Id
-import erules.core.{Rule, RulesEngine, RulesEngineIO}
-import erules.core.RuleVerdict.Allow
+import erules.{PureRule, PureRulesEngine, Rule, RulesEngine}
+import erules.RuleVerdict.Allow
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 
@@ -18,18 +17,18 @@ class StringReportEncoderSpec extends AsyncWordSpec with AsyncIOSpec with Matche
 
       case class Foo(x: String, y: Int)
 
-      val allowYEqZero: Rule[Id, Foo] = Rule("Check Y value").partially[Id, Foo] { case Foo(_, 0) =>
+      val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
         Allow.withoutReasons
       }
 
-      val engine: IO[RulesEngineIO[Foo]] =
-        RulesEngine[IO]
+      val engine: IO[PureRulesEngine[Foo]] =
+        RulesEngine
           .withRules(allowYEqZero)
-          .denyAllNotAllowed
+          .denyAllNotAllowed[IO]
 
       val result: IO[String] =
         engine
-          .flatMap(_.parEval(Foo("TEST", 0)))
+          .map(_.seqEvalPure(Foo("TEST", 0)))
           .map(_.drainExecutionsTime.asReport[String])
 
       result
