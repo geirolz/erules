@@ -176,10 +176,12 @@ object Rule extends RuleInstances {
 
   class RuleBuilder[F[_], T] private[erules] (name: String) { $this =>
 
-    def apply(f: Function[T, F[RuleVerdict]]): Rule[F, T] =
+    def apply(f: T => F[RuleVerdict]): Rule[F, T] =
       RuleImpl(f, RuleInfo($this.name))
 
-    def partially(f: PartialFunction[T, F[RuleVerdict]])(implicit F: Applicative[F]): Rule[F, T] =
+    def matchOrIgnore(f: PartialFunction[T, F[RuleVerdict]])(implicit
+      F: Applicative[F]
+    ): Rule[F, T] =
       apply(f.lift.andThen(_.getOrElse(F.pure(Ignore.noMatch))))
 
     def failed(ex: Throwable)(implicit F: ApplicativeThrow[F]): Rule[F, T] =
@@ -189,7 +191,7 @@ object Rule extends RuleInstances {
       apply(_ => F.pure(v))
 
     // assertions
-    def assert(f: Function[T, F[Boolean]])(implicit
+    def assert(f: T => F[Boolean])(implicit
       F: Applicative[F]
     ): Rule[F, T] =
       fromBooleanF(f)(
@@ -197,7 +199,7 @@ object Rule extends RuleInstances {
         ifFalse = Deny.withoutReasons
       )
 
-    def assert(ifFalse: String)(f: Function[T, F[Boolean]])(implicit
+    def assert(ifFalse: String)(f: T => F[Boolean])(implicit
       F: Applicative[F]
     ): Rule[F, T] =
       fromBooleanF(f)(
@@ -205,15 +207,15 @@ object Rule extends RuleInstances {
         ifFalse = Deny.because(ifFalse)
       )
 
-    def assertNot(f: Function[T, F[Boolean]])(implicit F: Applicative[F]): Rule[F, T] =
+    def assertNot(f: T => F[Boolean])(implicit F: Applicative[F]): Rule[F, T] =
       assert(f.andThen(_.map(!_)))
 
-    def assertNot(ifTrue: String)(f: Function[T, F[Boolean]])(implicit
+    def assertNot(ifTrue: String)(f: T => F[Boolean])(implicit
       F: Applicative[F]
     ): Rule[F, T] = assert(ifTrue)(f.andThen(_.map(!_)))
 
     def fromBooleanF(
-      f: Function[T, F[Boolean]]
+      f: T => F[Boolean]
     )(ifTrue: => RuleVerdict, ifFalse: => RuleVerdict)(implicit
       F: Applicative[F]
     ): Rule[F, T] = apply(f.andThen(_.ifF(ifTrue, ifFalse)))

@@ -14,7 +14,7 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
   test("EngineResult.asJsonReport return a well-formatted JSON report") {
     case class Foo(x: String, y: Int)
 
-    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").partially { case Foo(_, 0) =>
+    val allowYEqZero: PureRule[Foo] = Rule("Check Y value").matchOrIgnore { case Foo(_, 0) =>
       Allow.because("reason")
     }
 
