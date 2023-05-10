@@ -2,8 +2,8 @@
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.9"
-  libraryDependencies += "com.github.geirolz" %% "erules-generic" % "0.0.9"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.0"
+  libraryDependencies += "com.github.geirolz" %% "erules-generic" % "0.1.0"
 ```
 
 ### Usage

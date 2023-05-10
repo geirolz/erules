@@ -4,8 +4,8 @@ and the `XmlReportEncoder` instances to produce an XML report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.9"
-  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "0.0.9"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.0"
+  libraryDependencies += "com.github.geirolz" %% "erules-cats-xml" % "0.1.0"
 ```
 
 ### Usage
@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@64e6f1cd,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@30142743,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@51548dba,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@1e2818b1,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import

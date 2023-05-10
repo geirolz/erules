@@ -16,7 +16,7 @@ eRules supports Scala 2.13 and 3
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.9"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.0"
 ```
 
 
@@ -81,7 +81,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4e8bcb62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@4a39095c,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@eb0606d,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@2b5de320,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.

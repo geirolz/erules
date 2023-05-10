@@ -4,8 +4,8 @@ and the `JsonReportEncoder` instances to produce a json report.
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.0.9"
-  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.0.9"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.0"
+  libraryDependencies += "com.github.geirolz" %% "erules-circe" % "0.1.0"
 ```
 
 ### Usage
@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@159e1b62,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11131/0x000000080283b368@31935e2f,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@3d4c38ac,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@158954df,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import 
