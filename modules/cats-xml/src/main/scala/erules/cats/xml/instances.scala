@@ -1,6 +1,6 @@
 package erules.cats.xml
 
-import cats.xml.{XmlData, XmlNode}
+import cats.xml.XmlNode
 import cats.xml.codec.Encoder
 import erules.cats.xml.report.{XmlReportInstances, XmlReportSyntax}
 import erules.{
@@ -72,8 +72,8 @@ private[xml] trait BasicTypesCatsXmlInstances {
       XmlNode("RuleInfo")
         .withAttributes(
           "name" := v.name,
-          "description" := v.description.map(XmlData.fromString).getOrElse(XmlData.empty),
-          "targetInfo" := v.targetInfo.map(XmlData.fromString).getOrElse(XmlData.empty)
+          "description" := v.description.getOrElse(""),
+          "targetInfo" := v.targetInfo.getOrElse("")
         )
         .withChildren(
           XmlNode("FullDescription").withText(v.fullDescription)
