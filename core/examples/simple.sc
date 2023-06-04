@@ -22,9 +22,9 @@ val checkCitizenship: PureRule[Citizenship] = Rule("Check UK citizenship") {
 }
 
 val checkAdultAge: PureRule[Age] = Rule("Check Age >= 18") {
-    case a: Age if a.value >= 18 => Allow.withoutReasons
-    case _                       => Deny.because("Only >= 18 age are allowed!")
-  }
+  case a: Age if a.value >= 18 => Allow.withoutReasons
+  case _                       => Deny.because("Only >= 18 age are allowed!")
+}
 
 val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
   checkCitizenship
