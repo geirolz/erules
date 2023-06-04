@@ -3,15 +3,13 @@ package erules
 import cats.{Eq, Show}
 import cats.kernel.Hash
 
-import java.math.BigInteger
-
 /** A unique reference to a rule.
   */
-final class RuleRef private[erules] (val value: String) extends AnyVal with Serializable
+final class RuleRef private[erules] (val value: BigInt) extends AnyVal with Serializable
 object RuleRef {
 
   def fromString(value: String): RuleRef =
-    new RuleRef(new BigInteger(value.getBytes()).toString())
+    new RuleRef(BigInt(value.getBytes()))
 
   implicit val eq: Eq[RuleRef]     = Eq.by(_.value)
   implicit val show: Show[RuleRef] = Show.fromToString[RuleRef]

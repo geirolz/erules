@@ -42,6 +42,7 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
           "evaluatedRules" : [
             {
               "ruleInfo" : {
+                "ref" : 5340595900475325933418219074917,
                 "name" : "Check Y value",
                 "fullDescription" : "Check Y value"
               },

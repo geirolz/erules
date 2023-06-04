@@ -71,6 +71,7 @@ private[xml] trait BasicTypesCatsXmlInstances {
     Encoder.of { v =>
       XmlNode("RuleInfo")
         .withAttributes(
+          "ref" := v.uniqueRef.value,
           "name" := v.name,
           "description" := v.description.getOrElse(""),
           "targetInfo" := v.targetInfo.getOrElse("")
