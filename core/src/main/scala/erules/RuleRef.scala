@@ -8,8 +8,14 @@ import cats.kernel.Hash
 final class RuleRef private[erules] (val value: BigInt) extends AnyVal with Serializable
 object RuleRef {
 
-  def fromString(value: String): RuleRef =
-    new RuleRef(BigInt(value.getBytes()))
+  def fromString(value: String): RuleRef = {
+
+    val withoutSpaces: String = value.filter(_ != ' ')
+    val withoutSpacesLen      = withoutSpaces.length
+    val res =
+      s"$withoutSpacesLen${value.length - withoutSpacesLen}${BigInt(withoutSpaces.getBytes)}"
+    new RuleRef(BigInt(res.getBytes.slice(0, 64)))
+  }
 
   implicit val eq: Eq[RuleRef]     = Eq.by(_.value)
   implicit val show: Show[RuleRef] = Show.fromToString[RuleRef]

@@ -81,7 +81,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@eb0606d,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@2b5de320,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$13094/0x0000000802e2c000@42b306f2,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$13094/0x0000000802e2c000@28926acd,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
