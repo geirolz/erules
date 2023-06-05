@@ -57,6 +57,7 @@ object ProjectDependencies {
     "org.scalactic" %% "scalactic" % "3.2.15" % Test,
     "org.scalatest" %% "scalatest" % "3.2.15" % Test,
     "org.scalameta" %% "munit" % "0.7.29" % Test,
+    "org.scalameta" %% "munit-scalacheck" % "0.7.29" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
   )
 
