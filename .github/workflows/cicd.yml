@@ -37,7 +37,7 @@ jobs:
             test-tasks: test
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #----------- JDK -----------
       - name: Setup JDK
@@ -70,7 +70,7 @@ jobs:
     needs: [build]
     if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #----------- JDK -----------
       - name: Setup JDK
