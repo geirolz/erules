@@ -32,6 +32,7 @@ private[circe] trait BasicTypesCirceInstances {
   implicit final val ruleInfoCirceEncoder: Encoder[RuleInfo] =
     Encoder.instance { v =>
       Json.obj(
+        "ref"             -> Json.fromBigInt(v.uniqueRef.value),
         "name"            -> Json.fromString(v.name),
         "description"     -> v.description.map(Json.fromString).getOrElse(Json.Null),
         "targetInfo"      -> v.targetInfo.map(Json.fromString).getOrElse(Json.Null),

@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@3d4c38ac,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@158954df,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$13094/0x0000000802e2c000@61347703,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$13094/0x0000000802e2c000@226215ec,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import 
@@ -105,6 +105,7 @@ result.get.asJsonReport
 //     "evaluatedRules" : [
 //       {
 //         "ruleInfo" : {
+//           "ref" : 130951030448721307306845976060863283070036075973018254042724231716505479005503484356976,
 //           "name" : "Check UK citizenship",
 //           "targetInfo" : "citizenship",
 //           "fullDescription" : "Check UK citizenship for citizenship"
@@ -118,6 +119,7 @@ result.get.asJsonReport
 //       },
 //       {
 //         "ruleInfo" : {
+//           "ref" : 6456384276212653871606686934193894105466714179028215653,
 //           "name" : "Check Age >= 18",
 //           "targetInfo" : "age",
 //           "fullDescription" : "Check Age >= 18 for age"
