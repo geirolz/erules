@@ -37,7 +37,7 @@ jobs:
             test-tasks: test
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #----------- JDK -----------
       - name: Setup JDK
@@ -48,7 +48,7 @@ jobs:
 
       #----------- CACHE -----------
       - name: Cache SBT
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3.3.2
         with:
           # A list of files, directories, and wildcard patterns to cache and restore
           path: |
@@ -70,7 +70,7 @@ jobs:
     needs: [build]
     if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #----------- JDK -----------
       - name: Setup JDK
@@ -81,7 +81,7 @@ jobs:
 
       #----------- CACHE -----------
       - name: Cache SBT
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3.3.2
         with:
           # A list of files, directories, and wildcard patterns to cache and restore
           path: |
