@@ -3,9 +3,9 @@ import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
-  private val catsVersion       = "2.9.0"
-  private val catsEffectVersion = "3.5.1"
-  private val circeVersion      = "0.14.5"
+  private val catsVersion       = "2.10.0"
+  private val catsEffectVersion = "3.5.2"
+  private val circeVersion      = "0.14.6"
   private val catsXmlVersion    = "0.0.13"
 
   object Plugins {
@@ -56,7 +56,7 @@ object ProjectDependencies {
     // test
     "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0" % Test,
     "org.scalactic" %% "scalactic" % "3.2.17" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.16" % Test,
+    "org.scalatest" %% "scalatest" % "3.2.17" % Test,
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
   )
