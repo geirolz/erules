@@ -5,7 +5,7 @@ import erules.RuleVerdict.*
 
 import scala.concurrent.duration.FiniteDuration
 
-case class RuleResult[+V <: RuleVerdict] private (
+case class RuleResult[+V <: RuleVerdict](
   ruleInfo: RuleInfo,
   verdict: EitherThrow[V],
   executionTime: Option[FiniteDuration]
@@ -17,6 +17,12 @@ case class RuleResult[+V <: RuleVerdict] private (
 object RuleResult extends RuleResultInstances {
 
   type Unbiased = RuleResult[RuleVerdict]
+
+  private[RuleResult] def apply[V <: RuleVerdict](
+    ruleInfo: RuleInfo,
+    verdict: EitherThrow[V],
+    executionTime: Option[FiniteDuration]
+  ): RuleResult[V] = new RuleResult(ruleInfo, verdict, executionTime)
 
   def apply(ruleInfo: RuleInfo): RuleResultBuilder =
     new RuleResultBuilder(ruleInfo)
@@ -36,7 +42,7 @@ object RuleResult extends RuleResultInstances {
       verdict: EitherThrow[V],
       executionTime: Option[FiniteDuration] = None
     ): RuleResult[V] =
-      new RuleResult(ruleInfo, verdict, executionTime)
+      RuleResult(ruleInfo, verdict, executionTime)
 
     def succeeded[V <: RuleVerdict](
       v: V,

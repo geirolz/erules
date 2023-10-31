@@ -6,7 +6,7 @@ import cats.effect.kernel.Async
 import cats.effect.Sync
 import erules.utils.IsId
 
-case class RulesEngine[F[_], T] private (
+case class RulesEngine[F[_], T](
   rules: NonEmptyList[Rule[F, T]],
   interpreter: RuleResultsInterpreter
 ) {
@@ -55,6 +55,11 @@ case class RulesEngine[F[_], T] private (
       )
 }
 object RulesEngine {
+
+  private def apply[F[_], T](
+    rules: NonEmptyList[Rule[F, T]],
+    interpreter: RuleResultsInterpreter
+  ): RulesEngine[F, T] = new RulesEngine(rules, interpreter)
 
   def withRules[F[_], T](head1: Rule[F, T], tail: Rule[F, T]*): RulesEngineIntBuilder[F, T] =
     withRules[F, T](NonEmptyList.of[Rule[F, T]](head1, tail*))

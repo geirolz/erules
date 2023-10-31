@@ -3,7 +3,6 @@ package erules
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.Id
 import erules.testings.*
 import erules.RuleVerdict.{Allow, Deny}
 import org.scalatest.matchers.should.Matchers
