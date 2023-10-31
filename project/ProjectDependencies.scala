@@ -3,9 +3,9 @@ import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
-  private val catsVersion       = "2.9.0"
-  private val catsEffectVersion = "3.5.1"
-  private val circeVersion      = "0.14.5"
+  private val catsVersion       = "2.10.0"
+  private val catsEffectVersion = "3.5.2"
+  private val circeVersion      = "0.14.6"
   private val catsXmlVersion    = "0.0.9"
 
   object Plugins {
@@ -19,7 +19,7 @@ object ProjectDependencies {
 
   object Core {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scala-lang" % "scala-reflect" % "2.13.11"
+      "org.scala-lang" % "scala-reflect" % "2.13.12"
     )
   }
 
