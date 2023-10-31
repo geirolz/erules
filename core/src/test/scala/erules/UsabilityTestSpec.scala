@@ -29,11 +29,13 @@ class UsabilityTestSpec
           case Order(_, _, BillTo(_, Country.`UK`), _) => Allow.because(EvalReason("Bill to UK"))
           case _                                       => Deny.because("Bill to not from UK")
         },
-        Rule[Id, BigDecimal]("Prince under 5k")
+        Rule
+          .pure[BigDecimal]("Prince under 5k")
           .assert("Be under 5k")(_.toInt < 5000)
           .targetInfo("Total price")
           .contramap(_.items.map(_.price).sum),
-        Rule[Id, BigDecimal]("Prince under 5k - 2")
+        Rule
+          .pure[BigDecimal]("Prince under 5k - 2")
           .apply(o => Allow.when(o.toInt < 5000)(Deny.because("Be under 5k")))
           .targetInfo("Total price")
           .contramap(_.items.map(_.price).sum)
