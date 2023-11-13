@@ -7,8 +7,7 @@
 [![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/geirolz/erules&style=flat)](https://mergify.io)
 [![GitHub license](https://img.shields.io/github/license/geirolz/erules)](https://github.com/geirolz/erules/blob/main/LICENSE)
 
-
-A lightweight, simple, typed and functional rules engine evaluator using cats core.
+A lightweight, simple, typed, and functional rules engine evaluator using the Cats core.
 
 ## How to import
 
@@ -19,16 +18,15 @@ eRules supports Scala 2.13 and 3
   libraryDependencies += "com.github.geirolz" %% "erules-core" % "@VERSION@"
 ```
 
-
+---
 
 ## Glossary
-- **Rule** = the definition of a rule, the *check* is pure and can be async. 
-Each Rule must have a *description*. Each rule can have a *targetInfo* that is a string
-that describe the rule check target.
-- **RuleVerdict** = Is the verdict of a rule, can be `Allow`, `Deny` or `Ignore`. Each kind of verdict can have 0 or more reasons.
-- **RuleResult** = The rule result is just a case class to couple the `Rule` with is result `RuleVerdict` 
-and some other information like the execution time.
-- **EngineVerdict** = Same as `RuleVerdict` but related to the whole engine. Can be `Allowed` or `Denied`
+- **Rule**: the definition of a rule, the *check* is pure and can be async. Each Rule must have a *description*. Each rule can have a *targetInfo* that is a string that describes the rule check target.
+- **RuleVerdict**: Is the verdict of a rule, can be `Allow`, `Deny` or `Ignore`. Each kind of verdict can have 0 or more reasons.
+- **RuleResult**: The rule result is just a case class to couple the `Rule` with its result `RuleVerdict` and some other information like the execution time.
+- **EngineVerdict**: Same as `RuleVerdict` but related to the whole engine. Can be `Allowed` or `Denied`
+
+---
 
 ## How to use
 
@@ -47,10 +45,24 @@ case class Person(
 ```
 
 Assuming we want to check:
-- The person is adult
-- The person has a UK citizenship
+- The person is an adult
+- The person has UK citizenship
 
 Let's write the rules!
+
+Each Rule must have a unique name and can be:
+- **Pure**: a pure function that takes a value and returns a `RuleVerdict`
+- **Effect-ful**: a function that takes a value and returns a `F[RuleVerdict]` where `F` is a monad.
+
+There are several ways to define a rule:
+- **apply**: defines a complete rule from `T` to `F[RuleVerdict]` ( or `Id` for Pure Rules)
+- **matchOrIgnore**: defines a partial function from `T` to `F[RuleVerdict]` ( or `Id` for Pure Rules). If the function is not defined for the input value, the rule is ignored.
+- **const**: defines a rule that always returns the same `RuleVerdict` (e.g. `Allow` or `Deny`)
+- **failed**: defines a rule that always fails with an exception
+- **assert**: defines a rule from `T` to `F[Boolean]` ( or `Id` for Pure Rules) and returns `Allow` for `true` or `Deny` for `false`
+- **assertNot**: defines a rule from `T` to `F[Boolean]` ( or `Id` for Pure Rules) and returns `Allow` for `false` or `Deny` for `true`
+- **fromBooleanF**: defines a rule from `T` to `F[Boolean]` ( or `Id` for Pure Rules) where you can specify the behavior for `true` and `false` values.
+
 
 ```scala mdoc:to-string
 import erules.Rule
@@ -81,15 +93,22 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
 )
 ```
 
-N.B. Importing even the `erules-generic` you can use macro to auto-generate the target info using `contramapTarget` method.
-`contramapTarget` apply contramap and derive the target info by the contramap parameter. The contramap parameter 
-must be inline and have the following form: `_.bar.foo.test`.
+---
 
-Once we defied rules we just need to create the `RuleEngine` to evaluate that rules.
+N.B. Importing even the `erules-generic` you can use a macro to auto-generate the target info using the `contramapTarget` method. `contramapTarget` applies contramap and derives the target info by the contramap parameter. The contramap parameter must be inline and have the following form: `_.bar.foo.test`.
 
-We can evaluate rules in two different ways:
-- denyAllNotAllowed
-- allowAllNotDenied
+Once we define rules, we just need to create the `RuleEngine` to evaluate those rules.
+
+We can run the engine in two ways:
+- *denyAllNotAllowed*: to deny all is not explicitly allowed.
+- *allowAllNotDenied*: to allow all is not explicitly denied.
+
+Moreover, we can choose to run the engine in a pure way( with pure rules ) or in a monadic way (e.g. IO) using:
+- *seqEvalPure*: to run the engine in a pure way with pure rules.
+- *seqEval*: to sequentially run the engine in a monadic way.
+- *parEval*: to parallel run the engine in a monadic way.
+- *parEvalN*: to parallel run the engine in a monadic way with a fixed parallelism level.
+
 
 ```scala mdoc:to-string
 import erules.*
@@ -109,6 +128,7 @@ val result: IO[EngineResult[Person]] =
 result.unsafeRunSync().asReport[String]
 ```
 
+---
 
 ### Modules
 - [erules-generic](https://github.com/geirolz/erules/tree/main/modules/generic)

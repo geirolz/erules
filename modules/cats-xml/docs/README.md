@@ -69,14 +69,14 @@ import scala.util.Try
 
 implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
   XmlNode("Person")
-    .withAttributes(
+    .withAttrs(
       "name" := person.name,
       "lastName" := person.lastName,
       "age" := person.age.value
     )
     .withChildren(
       XmlNode("Citizenship")
-        .withAttributes(
+        .withAttrs(
           "country" := person.citizenship.country.value
         )
     )

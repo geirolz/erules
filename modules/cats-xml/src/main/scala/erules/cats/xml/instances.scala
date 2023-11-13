@@ -43,7 +43,7 @@ private[xml] trait BasicTypesCatsXmlInstances {
     : Encoder[RuleResultsInterpreterVerdict] = {
     Encoder.of { v =>
       XmlNode("Verdict")
-        .withAttributes(
+        .withAttrs(
           "type" := v.typeName
         )
         .withChildren(
@@ -70,7 +70,7 @@ private[xml] trait BasicTypesCatsXmlInstances {
   implicit def ruleInfoCatsXmlEncoder: Encoder[RuleInfo] =
     Encoder.of { v =>
       XmlNode("RuleInfo")
-        .withAttributes(
+        .withAttrs(
           "name" := v.name,
           "description" := v.description.getOrElse(""),
           "targetInfo" := v.targetInfo.getOrElse("")
@@ -83,7 +83,7 @@ private[xml] trait BasicTypesCatsXmlInstances {
   implicit final val ruleVerdictCatsXmlEncoder: Encoder[RuleVerdict] =
     Encoder.of { v =>
       XmlNode("Verdict")
-        .withAttributes("type" := v.typeName)
+        .withAttrs("type" := v.typeName)
         .withChildren(
           XmlNode("Reasons")
             .withChildren(

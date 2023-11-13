@@ -55,7 +55,7 @@ val allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList.of(
     .targetInfo("age")
     .contramap(_.age)
 )
-// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@51548dba,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$11130/0x000000080284d2d8@1e2818b1,RuleInfo(Check Age >= 18,None,Some(age))))
+// allPersonRules: NonEmptyList[PureRule[Person]] = NonEmptyList(RuleImpl(scala.Function1$$Lambda$12770/0x000000080343ed50@27fde1bb,RuleInfo(Check UK citizenship,None,Some(citizenship))), RuleImpl(scala.Function1$$Lambda$12770/0x000000080343ed50@3c10f385,RuleInfo(Check Age >= 18,None,Some(age))))
 ```
 
 Import
@@ -72,14 +72,14 @@ import scala.util.Try
 
 implicit val personEncoder: Encoder[Person] = Encoder.of(person =>
   XmlNode("Person")
-    .withAttributes(
+    .withAttrs(
       "name" := person.name,
       "lastName" := person.lastName,
       "age" := person.age.value
     )
     .withChildren(
       XmlNode("Citizenship")
-        .withAttributes(
+        .withAttrs(
           "country" := person.citizenship.country.value
         )
     )

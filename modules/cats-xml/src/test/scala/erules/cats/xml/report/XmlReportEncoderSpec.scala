@@ -17,7 +17,7 @@ class XmlReportEncoderSpec extends munit.CatsEffectSuite {
     object Foo {
       implicit val xmlEncoder: Encoder[Foo] = Encoder.of(foo =>
         XmlNode("Foo")
-          .withAttributes(
+          .withAttrs(
             "x" := foo.x,
             "y" := foo.y
           )
