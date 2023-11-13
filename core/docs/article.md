@@ -33,7 +33,7 @@ case class Person(name: String, lastName: String, age: Age, citizenship: Citizen
 Now you can start defining the rules you want to apply to the data. 
 Each Rule must have a unique name and can be:
 - **Pure**: a pure function that takes a value and returns a `RuleVerdict`
-- **Effect-ful**: a function that takes a value and returns a `F[RuleVerdict]` where `F` is a monad.
+- **Effectful**: a function that takes a value and returns a `F[RuleVerdict]` where `F` is a monad.
 
 There are several ways to define a rule:
 - **apply**: defines a complete rule from `T` to `F[RuleVerdict]` ( or `Id` for Pure Rules)
