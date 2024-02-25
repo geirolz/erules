@@ -4,13 +4,13 @@ import sbt.Keys.scalaVersion
 object ProjectDependencies {
 
   private val catsVersion       = "2.10.0"
-  private val catsEffectVersion = "3.5.2"
+  private val catsEffectVersion = "3.5.3"
   private val circeVersion      = "0.14.6"
   private val catsXmlVersion    = "0.0.14"
 
   object Plugins {
     val compilerPluginsFor2_13: Seq[ModuleID] = Seq(
-      compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full),
+      compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full),
       compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
     )
 
@@ -55,7 +55,7 @@ object ProjectDependencies {
     "org.typelevel" %% "cats-effect" % catsEffectVersion,
     // test
     "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0" % Test,
-    "org.scalactic" %% "scalactic" % "3.2.17" % Test,
+    "org.scalactic" %% "scalactic" % "3.2.18" % Test,
     "org.scalatest" %% "scalatest" % "3.2.18" % Test,
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test
