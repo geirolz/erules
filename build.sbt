@@ -6,7 +6,7 @@ lazy val prjPackageName         = prjName.replaceAll("[^\\p{Alpha}\\d]+", ".")
 lazy val prjDescription         = "A rules engine evaluator"
 lazy val prjOrg                 = "com.github.geirolz"
 lazy val scala213               = "2.13.12"
-lazy val scala33                = "3.3.1"
+lazy val scala33                = "3.3.3"
 lazy val supportedScalaVersions = List(scala213, scala33)
 
 //## global project to no publish ##
