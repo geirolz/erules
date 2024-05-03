@@ -12,7 +12,6 @@ on:
 
 # env variables
 env:
-  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
   SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
   SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -32,9 +31,9 @@ jobs:
           - scala: 2.13.12
             name: Scala2_13
             test-tasks: coverage test coverageReport gen-doc
-          - scala: 3.3.1
+          - scala: 3.3.3
             name: Scala3_3
-            test-tasks: test
+            test-tasks: coverage test coverageReport gen-doc
 
     steps:
       - uses: actions/checkout@v4
@@ -62,8 +61,8 @@ jobs:
         run: sbt ++${{ matrix.scala }} clean scalafmtCheck ${{ matrix.test-tasks }}
 
       #----------- COVERAGE -----------
-      - name: Codecov
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Upload Coverage to Codacy
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh)
 
   deploy:
     runs-on: ubuntu-latest
