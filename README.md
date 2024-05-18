@@ -15,7 +15,7 @@ eRules supports Scala 2.13 and 3
 
 **Sbt**
 ```sbt
-  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.0"
+  libraryDependencies += "com.github.geirolz" %% "erules-core" % "0.1.2"
 ```
 
 ---
