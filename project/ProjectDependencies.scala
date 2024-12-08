@@ -45,7 +45,7 @@ object ProjectDependencies {
 
   object Scalatest {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0"
+      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.6.0"
     )
   }
 
@@ -54,7 +54,7 @@ object ProjectDependencies {
     "org.typelevel" %% "cats-core" % catsVersion,
     "org.typelevel" %% "cats-effect" % catsEffectVersion,
     // test
-    "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0" % Test,
+    "org.typelevel" %% "cats-effect-testing-scalatest" % "1.6.0" % Test,
     "org.scalactic" %% "scalactic" % "3.2.19" % Test,
     "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     "org.scalameta" %% "munit" % "1.0.2" % Test,
