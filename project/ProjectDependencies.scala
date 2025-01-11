@@ -1,5 +1,5 @@
 import sbt._
-import sbt.Keys.scalaVersion
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 
 object ProjectDependencies {
 
@@ -28,37 +28,45 @@ object ProjectDependencies {
   }
 
   object Circe {
-    lazy val dedicated: Seq[ModuleID] = Seq(
-      "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      // test
-      "io.circe" %% "circe-parser" % circeVersion % Test,
-      "io.circe" %% "circe-literal" % circeVersion % Test
+    lazy val dedicated: Def.Initialize[Seq[ModuleID]] = Def.setting(
+      Seq(
+        "io.circe" %%% "circe-core" % circeVersion,
+        "io.circe" %%% "circe-generic" % circeVersion,
+        // test
+        "io.circe" %%% "circe-parser" % circeVersion % Test,
+        "io.circe" %%% "circe-literal" % circeVersion % Test
+      )
     )
   }
 
   object CatsXml {
-    lazy val dedicated: Seq[ModuleID] = Seq(
-      "com.github.geirolz" %% "cats-xml-core" % catsXmlVersion
+    lazy val dedicated: Def.Initialize[Seq[ModuleID]] = Def.setting(
+      Seq(
+        "com.github.geirolz" %%% "cats-xml-core" % catsXmlVersion
+      )
     )
   }
 
   object Scalatest {
-    lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0"
+    lazy val dedicated: Def.Initialize[Seq[ModuleID]] = Def.setting(
+      Seq(
+        "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0"
+      )
     )
   }
 
   // -------------------------------------------------------//
-  lazy val common: Seq[ModuleID] = Seq(
-    "org.typelevel" %% "cats-core" % catsVersion,
-    "org.typelevel" %% "cats-effect" % catsEffectVersion,
-    // test
-    "org.typelevel" %% "cats-effect-testing-scalatest" % "1.5.0" % Test,
-    "org.scalactic" %% "scalactic" % "3.2.19" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-    "org.scalameta" %% "munit" % "1.0.3" % Test,
-    "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test
+  lazy val common: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+      // test
+      "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0" % Test,
+      "org.scalactic" %%% "scalactic" % "3.2.19" % Test,
+      "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
+      "org.scalameta" %%% "munit" % "1.0.3" % Test,
+      "org.typelevel" %%% "munit-cats-effect" % "2.0.0" % Test
+    )
   )
 
 }

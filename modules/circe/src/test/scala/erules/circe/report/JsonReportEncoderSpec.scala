@@ -4,12 +4,12 @@ import cats.effect.IO
 import erules.{PureRule, Rule, RulesEngine, RulesEngineIO}
 import erules.RuleVerdict.Allow
 import io.circe.Json
+import io.circe.parser.parse
 
 class JsonReportEncoderSpec extends munit.CatsEffectSuite {
 
   import erules.circe.implicits.*
   import io.circe.generic.auto.*
-  import io.circe.literal.*
 
   test("EngineResult.asJsonReport return a well-formatted JSON report") {
     case class Foo(x: String, y: Int)
@@ -29,9 +29,8 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
         .flatMap(_.parEval(Foo("TEST", 0)))
         .map(_.drainExecutionsTime.asJsonReport)
 
-    assertIO(
-      obtained = result,
-      returns = json"""
+    val jsonString =
+      """
           {
         "data" : {
           "x" : "TEST",
@@ -55,6 +54,13 @@ class JsonReportEncoderSpec extends munit.CatsEffectSuite {
           ]
         }
       }"""
+
+    val expectation =
+      parse(jsonString).fold(failure => throw new Exception(failure.message), identity)
+
+    assertIO(
+      obtained = result,
+      returns  = expectation
     )
   }
 
