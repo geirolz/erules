@@ -1,5 +1,6 @@
 import sbt.project
 import ModuleMdocPlugin.autoImport.mdocScalacOptions
+import sbtcrossproject.{CrossProject, CrossType, Platform}
 
 lazy val prjName                = "erules"
 lazy val prjPackageName         = prjName.replaceAll("[^\\p{Alpha}\\d]+", ".")
@@ -33,23 +34,37 @@ lazy val erules: Project = project
   .settings(
     crossScalaVersions := Nil
   )
-  .aggregate(core, generic, circe, `cats-xml`, scalatest)
+  .aggregate(
+    core.js,
+    core.jvm,
+    generic.js,
+    generic.jvm,
+    circe.js,
+    circe.jvm,
+    `cats-xml`.jvm,
+    scalatest.js,
+    scalatest.jvm
+  )
 
-lazy val core: Project =
+lazy val core: CrossProject =
   buildModule(
     prjModuleName = "core",
     toPublish     = true,
-    folder        = "."
+    folder        = ".",
+    platforms     = JSPlatform,
+    JVMPlatform
   ).settings(
     mdocOut := file("."),
     libraryDependencies ++= ProjectDependencies.Core.dedicated
   )
 
-lazy val generic: Project =
+lazy val generic: CrossProject =
   buildModule(
     prjModuleName = "generic",
     toPublish     = true,
-    folder        = "modules"
+    folder        = "modules",
+    platforms     = JSPlatform,
+    JVMPlatform
   ).dependsOn(core)
     .settings(
       libraryDependencies ++= ProjectDependencies.Generic.dedicated
@@ -58,44 +73,54 @@ lazy val generic: Project =
       scalacOptions ++= macroSettings(scalaVersion.value)
     )
 
-lazy val circe: Project =
+lazy val circe: CrossProject =
   buildModule(
     prjModuleName = "circe",
     toPublish     = true,
-    folder        = "modules"
+    folder        = "modules",
+    platforms     = JSPlatform,
+    JVMPlatform
   ).dependsOn(core)
     .settings(
-      libraryDependencies ++= ProjectDependencies.Circe.dedicated
+      libraryDependencies ++= ProjectDependencies.Circe.dedicated.value
     )
 
-lazy val `cats-xml`: Project =
+lazy val `cats-xml`: CrossProject =
   buildModule(
     prjModuleName = "cats-xml",
     toPublish     = true,
-    folder        = "modules"
+    folder        = "modules",
+    platforms     = JVMPlatform
   ).dependsOn(core)
     .settings(
-      libraryDependencies ++= ProjectDependencies.CatsXml.dedicated
+      libraryDependencies ++= ProjectDependencies.CatsXml.dedicated.value
     )
 
-lazy val scalatest: Project =
+lazy val scalatest: CrossProject =
   buildModule(
     prjModuleName = "scalatest",
     toPublish     = true,
-    folder        = "modules"
+    folder        = "modules",
+    platforms     = JSPlatform,
+    JVMPlatform
   ).dependsOn(core)
     .settings(
-      libraryDependencies ++= ProjectDependencies.Scalatest.dedicated
+      libraryDependencies ++= ProjectDependencies.Scalatest.dedicated.value
     )
 
 //=============================== MODULES UTILS ===============================
-def buildModule(prjModuleName: String, toPublish: Boolean, folder: String): Project = {
+def buildModule(
+  prjModuleName: String,
+  toPublish: Boolean,
+  folder: String,
+  platforms: Platform*
+): CrossProject = {
   val keys       = prjModuleName.split("-")
   val docName    = keys.mkString(" ")
   val prjFile    = file(s"$folder/$prjModuleName")
   val docNameStr = s"$prjName $docName"
-
-  Project(prjModuleName, prjFile)
+  CrossProject(s"$prjName-$prjModuleName", prjFile)(platforms: _*)
+    .crossType(CrossType.Pure)
     .settings(baseSettings)
     .settings(
       description := moduleName.value,
@@ -136,7 +161,7 @@ lazy val baseSettings: Seq[Def.Setting[_]] = Seq(
   versionScheme := Some("early-semver"),
   // dependencies
   resolvers ++= ProjectResolvers.all,
-  libraryDependencies ++= ProjectDependencies.common ++ {
+  libraryDependencies ++= ProjectDependencies.common.value ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => ProjectDependencies.Plugins.compilerPluginsFor2_13
       case Some((3, _))  => ProjectDependencies.Plugins.compilerPluginsFor3
@@ -229,5 +254,5 @@ addCommandAlias(
     circe,
     `cats-xml`,
     scalatest
-  ).map(prj => s"project ${prj.id}-docs; mdoc").mkString(";") + s";project $prjName;"
+  ).map(prj => s"project ${prj.jvm.id}-docs; mdoc").mkString(";") + s";project $prjName;"
 )
