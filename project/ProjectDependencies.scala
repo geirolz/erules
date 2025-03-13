@@ -3,7 +3,7 @@ import sbt.Keys.scalaVersion
 
 object ProjectDependencies {
 
-  private val catsVersion       = "2.12.0"
+  private val catsVersion       = "2.13.0"
   private val catsEffectVersion = "3.5.7"
   private val circeVersion      = "0.14.10"
   private val catsXmlVersion    = "0.0.14"
