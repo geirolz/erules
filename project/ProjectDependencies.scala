@@ -19,7 +19,7 @@ object ProjectDependencies {
 
   object Core {
     lazy val dedicated: Seq[ModuleID] = Seq(
-      "org.scala-lang" % "scala-reflect" % "2.13.14"
+      "org.scala-lang" % "scala-reflect" % "2.13.16"
     )
   }
 
